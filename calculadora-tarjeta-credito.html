@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora de deuda · Tarjeta de crédito</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #F6F3EC;
+    color: #26323A;
+    font-family: 'IBM Plex Sans', sans-serif;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  a, button, .tab-btn, .btn-add, .btn-del, input[type="date"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab-btn:focus-visible,
+  .btn-add:focus-visible,
+  .btn-del:focus-visible {
+    outline: 2px solid #3FA37A;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  .input-field:focus-visible { outline: 2px solid #2F7A5E; outline-offset: 1px; }
+
+  /* El texto de ayuda sobre el fondo claro del formulario necesita más contraste */
+  .paper-card .hint { color: #4B5B4D; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: #5C6B78;
+  }
+  .headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 4vw, 2.9rem);
+    line-height: 1.1;
+    color: #16263B;
+    margin: 0.4rem 0 0.5rem;
+  }
+  .subtitle { color: #5A666F; max-width: 46ch; font-size: 0.95rem; }
+
+  /* ---- Tabs ---- */
+  .tabs-nav {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 2rem;
+    background: #FFFFFF;
+    border: 1px solid #DCD3BD;
+    border-radius: 10px;
+    padding: 5px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-radius: 7px;
+    color: #5C6B78;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tab-btn:hover { color: #16263B; background: #F6F3EC; }
+  .tab-btn.active { color: #FBFAF6; background: #16263B; }
+  .tab-panel { display: none; margin-top: 2.25rem; }
+  .tab-panel.active { display: block; }
+
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 1.75rem;
+  }
+  @media (max-width: 900px) {
+    .grid-2col { grid-template-columns: 1fr; }
+  }
+
+  .grid-3col {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.85fr) minmax(300px, 1.15fr) minmax(280px, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .dashboard-col-3 { display: flex; flex-direction: column; }
+  @media (max-width: 1300px) {
+    .grid-3col { grid-template-columns: 1fr 1fr; }
+    .dashboard-col-3 { grid-column: 1 / -1; }
+  }
+  @media (max-width: 800px) {
+    .grid-3col { grid-template-columns: 1fr; }
+    .dashboard-col-3 { grid-column: auto; }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 1.5rem 1rem 3rem; }
+    .tabs-nav {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: 0.85rem 0.7rem; font-size: 0.66rem; white-space: nowrap; min-height: 44px; }
+    .result-grid { grid-template-columns: 1fr; }
+    .row-2 { grid-template-columns: 1fr; }
+    .paper-card, .ledger-panel { padding: 1.25rem; }
+  }
+
+  .paper-card {
+    background: #EDE7D8;
+    color: #16263B;
+    border-radius: 4px;
+    padding: 1.75rem;
+    box-shadow: 0 12px 28px -18px rgba(22,38,59,0.25);
+  }
+  .paper-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5C6B5E;
+    border-bottom: 1px solid #C9C1AC;
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.1rem;
+  }
+  .field { margin-bottom: 1rem; }
+  .label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #3A4A3D;
+    margin-bottom: 0.3rem;
+  }
+  .hint { font-size: 0.7rem; color: #74806F; margin-top: 0.25rem; }
+  .input-field {
+    width: 100%;
+    background: #F8F5EC;
+    border: 1px solid #C9C1AC;
+    border-radius: 3px;
+    padding: 0.55rem 0.7rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.95rem;
+    color: #16263B;
+  }
+  .input-field:focus { outline: 2px solid #2F7A5E; outline-offset: 1px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+
+  .ledger-panel {
+    background: #FFFFFF;
+    border: 1px solid #DCD3BD;
+    border-radius: 4px;
+    padding: 1.75rem;
+  }
+  .ledger-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5C6B78;
+    margin-bottom: 1rem;
+  }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .result-box { border: 1px solid #E3DCC9; border-radius: 3px; padding: 1rem; background: #FBFAF6; }
+  .result-box.good { border-color: #B7E0C9; background: #EDF7F1; }
+  .result-box.warn { border-color: #EFC6BA; background: #FCF1EC; }
+  .result-label {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #5C6B78; margin-bottom: 0.35rem; font-family: 'IBM Plex Mono', monospace;
+  }
+  .result-number { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 600; color: #16263B; }
+  .result-sub { font-size: 0.78rem; color: #5A666F; margin-top: 0.2rem; }
+
+  .savings-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: #278059;
+    border-top: 1px dashed #DCD3BD;
+    padding-top: 0.9rem;
+    margin-top: 0.2rem;
+  }
+  .savings-line.negative { color: #A83A2B; }
+
+  .chart-wrap { margin-top: 1.5rem; }
+  .legend-row { display: flex; gap: 1rem; margin-bottom: 0.6rem; font-size: 0.75rem; color: #5A666F; }
+  .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .legend-dash {
+    display: inline-block;
+    width: 16px;
+    height: 0;
+    border-top: 2px dashed #C05746;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .warn-banner {
+    background: #FCF1EC;
+    border: 1px solid #EFC6BA;
+    color: #A83A2B;
+    font-size: 0.82rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 3px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .warn-banner.visible { display: block; }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #16263B;
+    margin-bottom: 0.9rem;
+  }
+
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .tip-card { background: #FFFFFF; border: 1px solid #DCD3BD; border-radius: 4px; padding: 1.1rem; }
+  .tip-num { font-family: 'IBM Plex Mono', monospace; color: #8A6412; font-size: 0.75rem; margin-bottom: 0.4rem; }
+  .tip-text { font-size: 0.86rem; color: #35414A; line-height: 1.4; }
+
+  .glossary-item { border-top: 1px solid #DCD3BD; padding: 1rem 0; }
+  .glossary-item:first-child { border-top: none; padding-top: 0; }
+  .glossary-term {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #16263B;
+    margin-bottom: 0.3rem;
+  }
+  .glossary-def { font-size: 0.86rem; color: #35414A; line-height: 1.5; }
+  .glossary-example {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #278059;
+    margin-top: 0.4rem;
+  }
+
+  .disclaimer {
+    font-size: 0.72rem;
+    color: #5A666F;
+    border-top: 1px solid #DCD3BD;
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    max-width: 70ch;
+  }
+
+  .target-row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+
+  .expense-form { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.1rem; }
+  .expense-form .field-inline { flex: 1; min-width: 140px; }
+  .btn-add {
+    background: #2F7A5E;
+    color: #FBFAF6;
+    border: none;
+    border-radius: 3px;
+    padding: 0.6rem 1.1rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .btn-add:hover { background: #278059; }
+  table.expense-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .expense-table th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #5C6B78;
+    border-bottom: 1px solid #DCD3BD;
+    padding: 0.5rem 0.4rem;
+  }
+  .expense-table td { padding: 0.55rem 0.4rem; border-bottom: 1px solid #EEE8D9; color: #26323A; vertical-align: middle; }
+  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.66rem; font-family: 'IBM Plex Mono', monospace; margin-left: 0.4rem; }
+  .tag.ok { background: #E3F3EA; color: #278059; }
+  .tag.due { background: #F8EFD9; color: #8A6412; }
+  .tag.late { background: #FCE4DE; color: #A83A2B; }
+  .btn-del { background: none; border: none; color: #A83A2B; cursor: pointer; font-size: 0.8rem; padding: 0.5rem 0.6rem; min-height: 40px; }
+  .empty-state { color: #5A666F; font-size: 0.82rem; padding: 0.75rem 0; display: none; }
+  .cycle-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Tarjeta de crédito · Calculadora de pago</div>
+    <h1 class="headline">Deja de adivinar con tu tarjeta</h1>
+    <p class="subtitle">
+      Entiende tu tarjeta, registra lo que gastas y arma tu plan para pagarla.
+    </p>
+  </header>
+
+  <nav class="tabs-nav" role="tablist" aria-label="Secciones de la calculadora">
+    <button class="tab-btn active" id="btn-tab1" role="tab" aria-selected="true" aria-controls="tab1" onclick="showTab('tab1')">Entendiendo mi tarjeta</button>
+    <button class="tab-btn" id="btn-tab2" role="tab" aria-selected="false" aria-controls="tab2" onclick="showTab('tab2')">Lo que gasto y cuándo pagar</button>
+    <button class="tab-btn" id="btn-tab3" role="tab" aria-selected="false" aria-controls="tab3" onclick="showTab('tab3')">Quiero pagar mi tarjeta</button>
+  </nav>
+
+  <main>
+
+  <!-- ===================== TAB 1: TIPS Y APRENDIZAJE ===================== -->
+  <div class="tab-panel active" id="tab1" role="tabpanel" aria-labelledby="btn-tab1" tabindex="0">
+    <div class="section-title">Cómo funciona tu tarjeta</div>
+    <div class="ledger-panel" style="margin-bottom: 2rem;">
+      <div class="glossary-item">
+        <div class="glossary-term">Corte (o fecha de corte)</div>
+        <div class="glossary-def">
+          Es el día del mes en que el banco "toma una foto" de tu tarjeta y suma todo lo
+          que gastaste desde el corte anterior. Con eso arma tu estado de cuenta.
+        </div>
+        <div class="glossary-example">Ej: si tu corte es el 7, todo lo gastado hasta el 7 entra en ese estado de cuenta.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Fecha límite de pago</div>
+        <div class="glossary-def">
+          Es la fecha tope para pagar lo que salió en el estado de cuenta de ese corte.
+          Normalmente son entre 20 y 30 días después del corte.
+        </div>
+        <div class="glossary-example">Ej: corte el 7 de junio → pago límite el 5 de julio (28 días de plazo).</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">¿Y lo que gasto después del corte?</div>
+        <div class="glossary-def">
+          No entra en el estado de cuenta que ya cerró. Entra en el siguiente ciclo, y se
+          paga hasta la próxima fecha límite. Por eso gastar justo después de tu corte te
+          da casi un mes completo antes de que ese gasto "cuente".
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Pago mínimo</div>
+        <div class="glossary-def">
+          El monto más bajo que puedes pagar sin caer en mora. El banco cobra el mayor
+          entre un % de tu saldo (usualmente 2%) y un monto fijo (ej. $25). Pagar solo el
+          mínimo alarga muchísimo el tiempo que tardas en liquidar la tarjeta.
+        </div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Tasa de interés anual (APR)</div>
+        <div class="glossary-def">
+          El costo de mantener saldo pendiente, expresado como porcentaje anual. Se cobra
+          mes a mes sobre el saldo que no pagaste. Entre más alto el APR, más caro te
+          sale cada mes que no pagas completo.
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Los campos de tu estado de cuenta</div>
+    <div class="ledger-panel" style="margin-bottom: 2rem;">
+      <div class="glossary-item">
+        <div class="glossary-term">Límite total de la tarjeta</div>
+        <div class="glossary-def">
+          Es lo máximo que el banco te presta en total, tu techo de crédito.
+        </div>
+        <div class="glossary-example">Ej: límite total $7,875.00</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Utilizado</div>
+        <div class="glossary-def">
+          Cuánto de ese límite ya gastaste y no has pagado, actualizado al día de hoy —
+          incluye compras que hiciste después del último corte, aunque todavía no salgan
+          en un estado de cuenta.
+        </div>
+        <div class="glossary-example">Ej: utilizado al 01-jul-2026: $4,165.00</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Disponible para compras</div>
+        <div class="glossary-def">
+          Lo que te queda de límite para seguir gastando: Límite total menos lo Utilizado.
+        </div>
+        <div class="glossary-example">Ej: $7,875.00 − $4,165.00 = $3,710.00 disponibles</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Deuda al corte</div>
+        <div class="glossary-def">
+          El saldo que quedó "congelado" el día del corte — es la base sobre la que el
+          banco calcula el pago mínimo y los intereses de ese ciclo. Suele ser distinto al
+          "Utilizado" de hoy, porque no incluye lo que gastaste después del corte.
+        </div>
+        <div class="glossary-example">Ej: deuda al corte del 07-jun-2026: $4,089.07</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Pago mínimo</div>
+        <div class="glossary-def">
+          Lo mínimo que debes pagar antes del día límite para no caer en mora. Se calcula
+          sobre la deuda al corte, no sobre lo utilizado hoy.
+        </div>
+        <div class="glossary-example">Ej: pago mínimo de ese corte: $123.00</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Día límite para pagar</div>
+        <div class="glossary-def">
+          La fecha tope para pagar, al menos, el pago mínimo de ese corte. Muchas apps de
+          banco también te muestran cuántos días faltan.
+        </div>
+        <div class="glossary-example">Ej: 05-jul-2026 (faltan 3 días)</div>
+      </div>
+    </div>
+
+    <div class="section-title">Estrategias generales</div>
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-num">01</div>
+        <div class="tip-text">Paga antes de la fecha de corte, no solo antes de la fecha límite. Bajar el saldo antes del corte reduce el saldo sobre el que se calcula el interés del siguiente ciclo.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">02</div>
+        <div class="tip-text">Congela los cargos nuevos mientras bajas el saldo. Cada compra nueva compite con tu pago y alarga el plazo real de salida.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">03</div>
+        <div class="tip-text">Un abono único (bono, aguinaldo, ahorro extra) al principio reduce más interés que el mismo monto repartido en varios meses, porque baja el saldo sobre el que corre la tasa desde antes.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">04</div>
+        <div class="tip-text">Si consideras una transferencia de saldo a otra tarjeta con tasa promocional, compara la comisión de transferencia (usualmente 3–5%) contra el interés que realmente ahorrarías.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB 2: REGISTRO DE GASTOS ===================== -->
+  <div class="tab-panel" id="tab2" role="tabpanel" aria-labelledby="btn-tab2" tabindex="0">
+    <div class="ledger-panel">
+      <div class="ledger-title">Tu ciclo de facturación</div>
+      <p style="font-size:0.82rem; color:#5A666F; margin-top:-0.4rem; margin-bottom:1.25rem;">
+        Pon las dos fechas de tu último estado de cuenta y el sistema calcula solo cuándo
+        cae tu corte cada mes.
+      </p>
+
+      <div class="hint" style="margin-bottom:0.75rem;">Introduce el día de corte de cada mes y el día de pago de cada mes</div>
+      <div class="row-2" style="margin-bottom:0.3rem; max-width:420px;">
+        <div>
+          <label class="label" style="color:#35414A;" for="diaCorte">Día de tu corte</label>
+          <input class="input-field" type="number" min="1" max="31" id="diaCorte" value="7" />
+        </div>
+        <div>
+          <label class="label" style="color:#35414A;" for="diaPago">Día límite de pago</label>
+          <input class="input-field" type="number" min="1" max="31" id="diaPago" value="5" />
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:1.5rem;" id="cicloHint" aria-live="polite"></div>
+
+      <div class="ledger-title">Gastos del día a día</div>
+      <p style="font-size:0.82rem; color:#5A666F; margin-top:-0.4rem; margin-bottom:1.25rem;">
+        Registra lo que gastas y te decimos a qué corte pertenece y cuándo vence ese pago.
+      </p>
+
+      <div class="expense-form">
+        <div class="field-inline">
+          <label class="label" style="color:#35414A;" for="gastoFecha">Fecha</label>
+          <input class="input-field" type="date" id="gastoFecha" />
+        </div>
+        <div class="field-inline">
+          <label class="label" style="color:#35414A;" for="gastoDesc">Descripción</label>
+          <input class="input-field" type="text" id="gastoDesc" placeholder="Super, gasolina..." />
+        </div>
+        <div class="field-inline" style="max-width:140px; flex:none;">
+          <label class="label" style="color:#35414A;" for="gastoMonto">Monto</label>
+          <input class="input-field" type="number" min="0" step="0.01" id="gastoMonto" placeholder="0" />
+        </div>
+        <button class="btn-add" onclick="addGasto()">Agregar gasto</button>
+      </div>
+
+      <div id="cycleSummary" class="cycle-summary"></div>
+
+      <div style="overflow-x:auto; margin-top:0.75rem;">
+        <table class="expense-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Descripción</th>
+              <th>Monto</th>
+              <th>Corte que le aplica</th>
+              <th>Fecha límite de pago</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="gastosBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState">Aún no has agregado gastos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB 3: DASHBOARD DE PAGO ===================== -->
+  <div class="tab-panel" id="tab3" role="tabpanel" aria-labelledby="btn-tab3" tabindex="0">
+    <div class="grid-3col">
+      <!-- INPUT CARD -->
+      <div class="paper-card">
+        <div class="paper-title">Datos de tu tarjeta</div>
+
+        <div class="field">
+          <label class="label" for="balance">Saldo actual</label>
+          <input class="input-field" type="number" min="0" id="balance" value="3500" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="apr">Tasa de interés anual (APR %)</label>
+          <input class="input-field" type="number" min="0" step="0.1" id="apr" value="38" />
+          <div class="hint">Aparece en tu estado de cuenta como tasa anual o CAT</div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="minActual">Tu pago mínimo actual</label>
+          <input class="input-field" type="number" min="0" id="minActual" value="123" />
+          <div class="hint">El que te muestra tu app o estado de cuenta — no hay que calcularlo</div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="plannedPayment">Tu pago mensual planeado</label>
+          <input class="input-field" type="number" min="0" id="plannedPayment" value="250" />
+          <div class="hint">Este es el monto fijo que te comprometes a pagar cada mes</div>
+        </div>
+
+        <div class="field" style="margin-bottom:0;">
+          <label class="label" for="lumpSum">Abono único hoy (opcional)</label>
+          <input class="input-field" type="number" min="0" id="lumpSum" value="0" />
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="ledger-panel">
+        <div class="ledger-title">Resultado de la simulación</div>
+
+        <div class="warn-banner" id="warnBanner" aria-live="polite">
+          Con tu pago mensual no cubres ni los intereses. Sube el pago mensual o el saldo nunca bajará.
+        </div>
+
+        <div class="result-grid" aria-live="polite">
+          <div class="result-box warn">
+            <div class="result-label">Solo pago mínimo</div>
+            <div class="result-number" id="minMonths">—</div>
+            <div class="result-sub" id="minInterest">Interés total: —</div>
+          </div>
+          <div class="result-box good">
+            <div class="result-label">Tu plan (pago fijo)</div>
+            <div class="result-number" id="planMonths">—</div>
+            <div class="result-sub" id="planInterest">Interés total: —</div>
+          </div>
+        </div>
+
+        <div class="savings-line" id="savingsLine" aria-live="polite"></div>
+
+        <div class="chart-wrap">
+          <div class="legend-row">
+            <span><span class="legend-dash"></span>Solo mínimo</span>
+            <span><span class="legend-dot" style="background:#3FA37A;"></span>Tu plan</span>
+          </div>
+          <canvas id="payoffChart" height="220" role="img" aria-label="Gráfica del saldo restante mes a mes"></canvas>
+          <p class="sr-only" id="chartSrSummary" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <!-- TARGET MONTHS + TIME COMPARISON -->
+      <div class="dashboard-col-3">
+        <div class="ledger-panel">
+          <div class="ledger-title">Meta: quiero liquidarla en X meses</div>
+          <div class="target-row">
+            <div>
+              <label class="label" style="color:#35414A;" for="targetMonths">Meses para liquidar</label>
+              <input class="input-field" style="width:140px;" type="number" min="1" id="targetMonths" value="12" />
+            </div>
+            <div class="result-box good" style="flex:1; min-width:180px;">
+              <div class="result-label">Pago mensual necesario</div>
+              <div class="result-number" id="requiredPayment">—</div>
+              <div class="result-sub">Sobre el saldo restante después del abono único</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ledger-panel" style="margin-top:1.25rem;">
+          <div class="ledger-title">Compara distintos plazos</div>
+          <p style="font-size:0.8rem; color:#5A666F; margin-top:-0.4rem; margin-bottom:1.1rem;">
+            Entre más corto el plazo, más alto el pago mensual pero menos interés total pagas.
+          </p>
+          <div style="overflow-x:auto;">
+            <table class="expense-table">
+              <thead>
+                <tr>
+                  <th>Plazo</th>
+                  <th>Pago/mes</th>
+                  <th>Interés</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="timeCompareBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </main>
+
+  <p class="disclaimer">
+    Esta calculadora es una herramienta de referencia con fines informativos y no
+    constituye asesoría financiera personalizada. Los cálculos son estimaciones basadas
+    en los datos que ingresas; tu estado de cuenta real puede variar por comisiones,
+    seguros u otros cargos. Para decisiones importantes, consulta a un asesor financiero.
+  </p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

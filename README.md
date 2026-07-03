@@ -12,7 +12,7 @@ La app está organizada en 3 pestañas:
 
 ## Stack
 
-- HTML, CSS y JavaScript vanilla — un solo archivo, sin frameworks ni paso de build.
+- HTML, CSS y JavaScript vanilla — dos archivos (`calculadora-tarjeta-credito.html` + `script.js`), sin frameworks ni paso de build.
 - [Chart.js](https://www.chartjs.org/) vía CDN (`cdnjs.cloudflare.com`) para la gráfica de saldo.
 - Fuentes de Google Fonts (Fraunces, IBM Plex Sans, IBM Plex Mono) vía `@import`.
 
@@ -36,12 +36,12 @@ xdg-open index.html    # Linux
 
 También funciona con cualquier hosting estático (Netlify, Vercel, Cloudflare Pages) arrastrando el archivo.
 
-## Estructura del archivo
+## Estructura del repo
 
-Todo vive en un único `.html`:
-- `<style>` — variables de color, tipografía y layout (grid responsivo de 3 columnas en desktop, apilado en mobile).
-- HTML del body — las 3 pestañas (`role="tablist"` / `role="tab"` / `role="tabpanel"`).
-- `<script>` — lógica de amortización, cálculo de ciclos de facturación, render de la gráfica y control de pestañas.
+- `calculadora-tarjeta-credito.html` — el markup y los estilos (bloque `<style>` con variables de color, tipografía y layout responsivo de 3 columnas).
+- `script.js` — toda la lógica: cálculo de amortización, ciclos de facturación, render de la gráfica y control de pestañas.
+
+Ambos archivos deben estar en la misma carpeta; el HTML carga el JS con `<script src="script.js"></script>`.
 
 ## Accesibilidad
 
