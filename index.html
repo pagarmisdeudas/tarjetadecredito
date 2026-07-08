@@ -174,6 +174,22 @@
     /* Meta de meses: input y resultado apilados */
     .target-row { flex-direction: column; align-items: stretch; }
     .target-row .input-field { width: 100% !important; }
+
+    /* Formulario de captura de gastos: apilar los 3 campos en una columna */
+    .gasto-row {
+      display: flex !important;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .gasto-row .input-field { width: 100%; }
+    .gasto-row .btn-row-remove {
+      align-self: flex-start;
+      width: auto;
+      min-width: 0;
+      color: #A83A2B;
+      font-size: 0.85rem;
+    }
+    .gasto-row .btn-row-remove::after { content: " Quitar"; }
   }
 
   @media (max-width: 400px) {
@@ -517,6 +533,110 @@
   .btn-del { background: none; border: none; color: #A83A2B; cursor: pointer; font-size: 0.8rem; padding: 0.5rem 0.6rem; min-height: 40px; }
   .empty-state { color: #5A666F; font-size: 0.82rem; padding: 0.75rem 0; display: none; }
   .cycle-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+
+  /* ---- Filtros de gastos ---- */
+  .gasto-filtros { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1.25rem; }
+  .filtro-btn {
+    background: none;
+    border: 1px solid #DCD3BD;
+    border-radius: 20px;
+    color: #5C6B78;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .filtro-btn:hover { border-color: #16263B; color: #16263B; }
+  .filtro-btn.active { background: #16263B; color: #FBFAF6; border-color: #16263B; }
+
+  /* ---- Tarjeta de gasto (V2) ---- */
+  .gasto-card {
+    background: #FBFAF6;
+    border: 1px solid #E3DCC9;
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    margin-bottom: 0.7rem;
+  }
+  .gasto-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .gasto-card-desc {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #16263B;
+    line-height: 1.2;
+  }
+  .gasto-card-desc small {
+    display: block;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: #8A94A0;
+    margin-top: 0.15rem;
+  }
+  .gasto-card-monto {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #16263B;
+    white-space: nowrap;
+  }
+  .gasto-card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border-top: 1px solid #EEE8D9;
+    padding-top: 0.7rem;
+  }
+  .gasto-card-vence { font-size: 0.82rem; color: #5A666F; }
+  .gasto-card-vence b { color: #16263B; font-weight: 600; }
+  .gasto-card-derecha { display: flex; align-items: center; gap: 0.6rem; }
+  .gasto-estado {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .gasto-estado.ok { background: #E3F3EA; color: #278059; }
+  .gasto-estado.due { background: #F8EFD9; color: #8A6412; }
+  .gasto-estado.late { background: #FCE4DE; color: #A83A2B; }
+  .gasto-estado.pagado { background: #EAECEE; color: #5A666F; }
+  .gasto-btn-pagado {
+    background: none;
+    border: 1px solid #B7E0C9;
+    border-radius: 5px;
+    color: #278059;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.65rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .gasto-btn-pagado:hover { background: #E3F3EA; }
+  .gasto-btn-quitar {
+    background: none;
+    border: none;
+    color: #C9A99E;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.2rem 0.35rem;
+    line-height: 1;
+  }
+  .gasto-btn-quitar:hover { color: #A83A2B; }
+  /* Gasto ya pagado: atenuado */
+  .gasto-card.pagado { opacity: 0.62; }
+  .gasto-card.pagado .gasto-card-desc,
+  .gasto-card.pagado .gasto-card-monto { text-decoration: line-through; text-decoration-color: #B0B8BF; }
+  .gasto-btn-pagado.activo { background: #E3F3EA; border-color: #278059; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -706,22 +826,15 @@
 
       <div id="cycleSummary" class="cycle-summary"></div>
 
-      <div style="overflow-x:auto; margin-top:0.75rem;">
-        <table class="expense-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Descripción</th>
-              <th>Monto</th>
-              <th>Corte que le aplica</th>
-              <th>Fecha límite de pago</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="gastosBody"></tbody>
-        </table>
-        <div class="empty-state" id="emptyState">Aún no has agregado gastos.</div>
+      <div class="gasto-filtros" id="gastoFiltros">
+        <button class="filtro-btn active" data-filtro="todos" onclick="setFiltro('todos')">Todos</button>
+        <button class="filtro-btn" data-filtro="vencidos" onclick="setFiltro('vencidos')">Vencidos</button>
+        <button class="filtro-btn" data-filtro="porpagar" onclick="setFiltro('porpagar')">Por pagar</button>
+        <button class="filtro-btn" data-filtro="nocortan" onclick="setFiltro('nocortan')">Aún no cortan</button>
       </div>
+
+      <div id="gastosLista" style="margin-top:0.75rem;"></div>
+      <div class="empty-state" id="emptyState">Aún no has agregado gastos.</div>
     </div>
   </div>
 
@@ -1085,7 +1198,9 @@ function cargarEstado() {  try {
       document.getElementById("mismaTarjeta").checked = estado.mismaTarjeta;
     }
     if (Array.isArray(estado.gastos)) {
-      gastos = estado.gastos.filter((g) => g && g.fecha && typeof g.monto === "number");
+      gastos = estado.gastos
+        .filter((g) => g && g.fecha && typeof g.monto === "number")
+        .map((g) => ({ ...g, pagado: !!g.pagado }));
       gastoIdCounter = gastos.reduce((max, g) => Math.max(max, Number(g.id) || 0), 0);
     }
   } catch (e) {
@@ -1579,7 +1694,7 @@ function saveAllGastoRows() {
       return;
     }
 
-    gastos.push({ id: nextGastoId(), fecha, desc: descRaw || "Sin descripción", monto });
+    gastos.push({ id: nextGastoId(), fecha, desc: descRaw || "Sin descripción", monto, pagado: false });
     added += 1;
   });
 
@@ -1634,55 +1749,125 @@ function getDiaCorteYGracia() {
   return { diaCorte, diasGracia: diasGracia > 0 ? diasGracia : 20 };
 }
 
+let filtroActivo = "todos";
+
+function setFiltro(f) {
+  filtroActivo = f;
+  document.querySelectorAll(".filtro-btn").forEach((b) => {
+    b.classList.toggle("active", b.dataset.filtro === f);
+  });
+  renderGastos();
+}
+
+function togglePagado(id) {
+  const g = gastos.find((x) => x.id === id);
+  if (g) {
+    g.pagado = !g.pagado;
+    renderGastos();
+    guardarEstado();
+  }
+}
+
+// Clasifica un gasto en su estado de ciclo: vencido / por pagar / aún no corta
+function clasificarGasto(g, diaCorte, diasGracia, today) {
+  const { corte, due } = getCicloInfo(g.fecha, diaCorte, diasGracia);
+  const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+  const yaCorto = corte <= today; // el gasto ya entró a un estado de cuenta cerrado
+  let estado;
+  if (diffDays < 0) estado = "vencidos";        // pasó la fecha de pago
+  else if (yaCorto) estado = "porpagar";        // cortó, esperando su pago
+  else estado = "nocortan";                     // gasto reciente, aún no entra a un corte
+  return { corte, due, diffDays, estado };
+}
+
 function renderGastos() {
   const { diaCorte, diasGracia, incomplete } = getDiaCorteYGracia();
-  const tbody = document.getElementById("gastosBody");
+  const lista = document.getElementById("gastosLista");
   const emptyState = document.getElementById("emptyState");
+  const filtros = document.getElementById("gastoFiltros");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   if (incomplete) {
-    tbody.innerHTML = "";
+    lista.innerHTML = "";
     document.getElementById("cycleSummary").innerHTML = "";
+    if (filtros) filtros.style.display = "none";
     emptyState.style.display = "block";
     emptyState.textContent = "Completa el día de corte y el día límite de pago arriba para ver tus gastos organizados por ciclo.";
     return;
   }
-  emptyState.textContent = "Aún no has agregado gastos.";
 
   const sorted = [...gastos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  if (filtros) filtros.style.display = sorted.length ? "flex" : "none";
 
-  tbody.innerHTML = "";
-  emptyState.style.display = sorted.length ? "none" : "block";
-
+  // Totales por ciclo (siempre sobre todos los gastos, no afectados por el filtro)
   const cycleTotals = {};
-
   sorted.forEach((g) => {
     const { corte, due } = getCicloInfo(g.fecha, diaCorte, diasGracia);
     const key = corte.toISOString().slice(0, 10);
     if (!cycleTotals[key]) cycleTotals[key] = { corte, due, total: 0 };
     cycleTotals[key].total += g.monto;
+  });
 
-    const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
-    let tagClass = "ok";
-    let tagText = `faltan ${diffDays}d`;
-    if (diffDays < 0) {
-      tagClass = "late";
-      tagText = "vencido";
+  // Aplica el filtro. Los pagados solo se muestran en "Todos".
+  const visibles = sorted.filter((g) => {
+    if (filtroActivo === "todos") return true;
+    if (g.pagado) return false; // pagados salen de los filtros de urgencia
+    const { estado } = clasificarGasto(g, diaCorte, diasGracia, today);
+    return estado === filtroActivo;
+  });
+
+  lista.innerHTML = "";
+
+  if (!sorted.length) {
+    emptyState.style.display = "block";
+    emptyState.textContent = "Aún no has agregado gastos.";
+  } else if (!visibles.length) {
+    emptyState.style.display = "block";
+    const nombres = { vencidos: "vencidos", porpagar: "por pagar", nocortan: "que aún no cortan" };
+    emptyState.textContent = `No tienes gastos ${nombres[filtroActivo] || ""}.`;
+  } else {
+    emptyState.style.display = "none";
+  }
+
+  visibles.forEach((g) => {
+    const { corte, due, diffDays } = clasificarGasto(g, diaCorte, diasGracia, today);
+
+    let estadoClass, estadoText;
+    if (g.pagado) {
+      estadoClass = "pagado";
+      estadoText = "✓ pagado";
+    } else if (diffDays < 0) {
+      estadoClass = "late";
+      estadoText = `venció hace ${Math.abs(diffDays)}d`;
+    } else if (diffDays === 0) {
+      estadoClass = "due";
+      estadoText = "vence hoy";
     } else if (diffDays <= 5) {
-      tagClass = "due";
+      estadoClass = "due";
+      estadoText = `faltan ${diffDays}d`;
+    } else {
+      estadoClass = "ok";
+      estadoText = `faltan ${diffDays}d`;
     }
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${formatFechaCorta(new Date(g.fecha + "T00:00:00"))}</td>
-      <td>${g.desc}</td>
-      <td>${fmt(g.monto)}</td>
-      <td>${formatFechaCorta(corte)}</td>
-      <td>${formatFechaCorta(due)}<span class="tag ${tagClass}">${tagText}</span></td>
-      <td><button class="btn-del" onclick="deleteGasto(${g.id})">Eliminar</button></td>
+    const card = document.createElement("div");
+    card.className = "gasto-card" + (g.pagado ? " pagado" : "");
+    card.innerHTML = `
+      <div class="gasto-card-top">
+        <span class="gasto-card-desc">${g.desc}<small>${formatFechaCorta(new Date(g.fecha + "T00:00:00"))}</small></span>
+        <span class="gasto-card-monto">${fmt(g.monto)}</span>
+      </div>
+      <div class="gasto-card-foot">
+        <span class="gasto-card-vence">Vence el <b>${formatFechaCorta(due)}</b></span>
+        <span class="gasto-card-derecha">
+          <span class="gasto-estado ${estadoClass}">${estadoText}</span>
+          <button class="gasto-btn-pagado ${g.pagado ? "activo" : ""}" onclick="togglePagado(${g.id})">${g.pagado ? "Deshacer" : "Ya lo pagué"}</button>
+          <button class="gasto-btn-quitar" title="Quitar" aria-label="Quitar gasto" onclick="deleteGasto(${g.id})">&times;</button>
+        </span>
+      </div>
     `;
-    tbody.appendChild(tr);
+    lista.appendChild(card);
   });
 
   const summaryDiv = document.getElementById("cycleSummary");
