@@ -3,7 +3,25 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calculadora de deuda · Tarjeta de crédito</title>
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<title>Calculadora de tarjeta de crédito: cuánto pagar y cuándo sales</title>
+<meta name="description" content="Mete tu saldo, tasa y pago mínimo y mira cuánto tardarás en pagar tu tarjeta — y cómo salir antes. Gratis, sin registro, tus datos no salen de tu teléfono." />
+
+<!-- Open Graph: cómo se ve el link al compartirlo en WhatsApp, Instagram, Facebook, etc.
+     IMPORTANTE: verifica que la URL de abajo sea la de tu sitio en producción (y actualízala si cambias de dominio). -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://tarjetadecredito.vercel.app/" />
+<meta property="og:title" content="Pagar tu tarjeta de crédito sí es posible" />
+<meta property="og:description" content="Entiende tu tarjeta y sabe cuánto y cuándo pagar. Sin registro, tus datos no salen de tu dispositivo." />
+<meta property="og:image" content="https://tarjetadecredito.vercel.app/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="es_LA" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Pagar tu tarjeta de crédito sí es posible" />
+<meta name="twitter:description" content="Entiende tu tarjeta y sabe cuánto y cuándo pagar. Sin registro, tus datos no salen de tu dispositivo." />
+<meta name="twitter:image" content="https://tarjetadecredito.vercel.app/og-image.png" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -106,13 +124,23 @@
     align-items: start;
   }
   .dashboard-col-3 { display: flex; flex-direction: column; }
+  /* Rango tablet/laptop: 2 columnas arriba (datos + resultado), meta y comparación abajo a lo ancho */
   @media (max-width: 1300px) {
-    .grid-3col { grid-template-columns: 1fr 1fr; }
-    .dashboard-col-3 { grid-column: 1 / -1; }
+    .grid-3col {
+      grid-template-columns: 0.85fr 1.15fr;
+      grid-template-areas: "datos resultado" "meta meta";
+    }
+    .grid-3col > .paper-card { grid-area: datos; }
+    .grid-3col > .ledger-panel { grid-area: resultado; }
+    .dashboard-col-3 { grid-area: meta; }
+    /* La meta y la comparación, lado a lado cuando van a lo ancho */
+    .dashboard-col-3 { flex-direction: row; gap: 1.5rem; align-items: start; }
+    .dashboard-col-3 > .ledger-panel { flex: 1; margin-top: 0 !important; }
   }
   @media (max-width: 800px) {
-    .grid-3col { grid-template-columns: 1fr; }
-    .dashboard-col-3 { grid-column: auto; }
+    .grid-3col { grid-template-columns: 1fr; grid-template-areas: "datos" "resultado" "meta"; }
+    .dashboard-col-3 { flex-direction: column; }
+    .dashboard-col-3 > .ledger-panel:last-child { margin-top: 1.25rem !important; }
   }
 
   @media (max-width: 640px) {
@@ -121,12 +149,39 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      width: 100%;
     }
     .tabs-nav::-webkit-scrollbar { display: none; }
     .tab-btn { padding: 0.85rem 0.7rem; font-size: 0.66rem; white-space: nowrap; min-height: 44px; }
     .result-grid { grid-template-columns: 1fr; }
     .row-2 { grid-template-columns: 1fr; }
     .paper-card, .ledger-panel { padding: 1.25rem; }
+
+    /* Barra superior: pestañas arriba, botón de borrar abajo alineado a la izquierda */
+    .barra-superior { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+    .borrar-datos-wrap { align-items: flex-start; align-self: flex-start; }
+
+    /* Campo de correo a ancho completo para no desbordar */
+    .exportar-correo { width: 100%; }
+    .exportar-correo .input-field { width: 100%; }
+    .exportar-acciones { align-items: stretch; }
+    .exportar-acciones .btn-add { width: 100%; }
+
+    /* Tabla de comparación de plazos: un poco más compacta */
+    .expense-table { font-size: 0.78rem; }
+    .expense-table th, .expense-table td { padding: 0.5rem 0.3rem; }
+
+    /* Meta de meses: input y resultado apilados */
+    .target-row { flex-direction: column; align-items: stretch; }
+    .target-row .input-field { width: 100% !important; }
+  }
+
+  @media (max-width: 400px) {
+    body { padding: 1.25rem 0.85rem 2.5rem; }
+    .headline { font-size: 1.7rem; }
+    .paper-card, .ledger-panel { padding: 1rem; }
+    .hero-number { font-size: 2rem; }
+    .tab-btn { font-size: 0.62rem; padding: 0.85rem 0.55rem; }
   }
 
   .paper-card {
@@ -227,6 +282,35 @@
     margin-bottom: 1.5rem;
   }
   .mini-warning strong { color: #16263B; }
+
+  .gasto-impacto {
+    background: #FCF1EC;
+    border: 1px solid #EFC6BA;
+    border-radius: 4px;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    color: #6E2A1D;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+  .gasto-impacto strong { color: #16263B; }
+
+  .misma-tarjeta-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #35414A;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .misma-tarjeta-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: #2F7A5E;
+    cursor: pointer;
+  }
 
   .chart-wrap { margin-top: 1.5rem; }
   .legend-row { display: flex; gap: 1rem; margin-bottom: 0.6rem; font-size: 0.75rem; color: #5A666F; }
@@ -341,6 +425,43 @@
     text-underline-offset: 3px;
   }
   .btn-link-add:hover { color: #16263B; }
+
+  .barra-superior {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .barra-superior .tabs-nav { margin-top: 0; }
+
+  .btn-borrar-datos {
+    background: none;
+    border: 1px solid #DCD3BD;
+    border-radius: 3px;
+    color: #A83A2B;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .btn-borrar-datos:hover { background: #FCF1EC; border-color: #EFC6BA; }
+  .borrar-datos-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    align-self: center;
+  }
+  .borrar-datos-hint { font-size: 0.66rem; color: #5A666F; }
+
+  .exportar-plan { border-top: 1px dashed #DCD3BD; margin-top: 1.5rem; padding-top: 1.25rem; }
+  .exportar-acciones { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .exportar-correo { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .exportar-correo .input-field { width: 210px; }
   .gasto-rows-actions {
     display: flex;
     justify-content: space-between;
@@ -402,17 +523,24 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Tarjeta de crédito · Calculadora de pago</div>
-    <h1 class="headline">Deja de adivinar con tu tarjeta</h1>
+    <h1 class="headline">Pagar tu tarjeta de crédito sí es posible</h1>
     <p class="subtitle">
-      Entiende tu tarjeta, registra lo que gastas y arma tu plan para pagarla.
+      Te enseñamos a entender tu tarjeta y a saber cuánto y cuándo pagar.
+      Sin registrarte, y tus datos no salen de tu teléfono o computadora.
     </p>
   </header>
 
-  <nav class="tabs-nav" role="tablist" aria-label="Secciones de la calculadora">
-    <button class="tab-btn active" id="btn-tab1" role="tab" aria-selected="true" aria-controls="tab1" onclick="showTab('tab1')">Entendiendo mi tarjeta</button>
-    <button class="tab-btn" id="btn-tab2" role="tab" aria-selected="false" aria-controls="tab2" onclick="showTab('tab2')">Lo que gasto y cuándo pagar</button>
-    <button class="tab-btn" id="btn-tab3" role="tab" aria-selected="false" aria-controls="tab3" onclick="showTab('tab3')">Quiero pagar mi tarjeta</button>
-  </nav>
+  <div class="barra-superior">
+    <nav class="tabs-nav" role="tablist" aria-label="Secciones de la calculadora">
+      <button class="tab-btn active" id="btn-tab1" role="tab" aria-selected="true" aria-controls="tab1" onclick="showTab('tab1')">Entendiendo mi tarjeta</button>
+      <button class="tab-btn" id="btn-tab2" role="tab" aria-selected="false" aria-controls="tab2" onclick="showTab('tab2')">Lo que gasto y cuándo pagar</button>
+      <button class="tab-btn" id="btn-tab3" role="tab" aria-selected="false" aria-controls="tab3" onclick="showTab('tab3')">Quiero pagar mi tarjeta</button>
+    </nav>
+    <div class="borrar-datos-wrap">
+      <button class="btn-borrar-datos" onclick="borrarDatos()" type="button">🗑 Borrar mis datos</button>
+      <span class="borrar-datos-hint">Empieza de cero: borra todo lo guardado</span>
+    </div>
+  </div>
 
   <main>
 
@@ -548,11 +676,11 @@
       <div class="row-2" style="margin-bottom:0.3rem; max-width:420px;">
         <div>
           <label class="label" style="color:#35414A;" for="diaCorte">Día de tu corte</label>
-          <input class="input-field" type="number" min="1" max="31" id="diaCorte" value="7" />
+          <input class="input-field" type="number" min="1" max="31" id="diaCorte" value="" placeholder="Ej: 7" />
         </div>
         <div>
           <label class="label" style="color:#35414A;" for="diaPago">Día límite de pago</label>
-          <input class="input-field" type="number" min="1" max="31" id="diaPago" value="5" />
+          <input class="input-field" type="number" min="1" max="31" id="diaPago" value="" placeholder="Ej: 5" />
         </div>
       </div>
       <div class="hint" style="margin-bottom:1.5rem;" id="cicloHint" aria-live="polite"></div>
@@ -606,19 +734,25 @@
 
         <div class="field">
           <label class="label" for="balance">Saldo actual</label>
-          <input class="input-field" type="number" min="0" id="balance" value="3500" />
+          <input class="input-field" type="number" min="0" id="balance" value="" placeholder="Ej: 3500" />
         </div>
 
         <div class="field">
           <label class="label" for="apr">Tasa de interés anual (APR %)</label>
-          <input class="input-field" type="number" min="0" step="0.1" id="apr" value="38" />
+          <input class="input-field" type="number" min="0" step="0.1" id="apr" value="" placeholder="Ej: 38" />
           <div class="hint">Aparece en tu estado de cuenta como tasa anual o CAT</div>
         </div>
 
         <div class="field">
           <label class="label" for="minActual">Tu pago mínimo actual</label>
-          <input class="input-field" type="number" min="0" id="minActual" value="123" />
+          <input class="input-field" type="number" min="0" id="minActual" value="" placeholder="Ej: 123" />
           <div class="hint">El que te muestra tu app o estado de cuenta — no hay que calcularlo</div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="cargosFijos">Cargos fijos del mes (opcional)</label>
+          <input class="input-field" type="number" min="0" id="cargosFijos" value="0" />
+          <div class="hint">Seguro, membresía u otros cobros mensuales de la tarjeta — si no tienes, déjalo en 0</div>
         </div>
 
         <div class="field" style="margin-bottom:0;">
@@ -682,7 +816,7 @@
 
         <div class="field">
           <label class="label" style="color:#35414A;" for="plannedPayment">Puedo pagar esto cada mes</label>
-          <input class="input-field" style="width:140px;" type="number" min="0" id="plannedPayment" value="250" />
+          <input class="input-field" style="width:140px;" type="number" min="0" id="plannedPayment" value="" placeholder="Ej: 250" />
         </div>
 
         <div class="warn-banner" id="warnBanner" aria-live="polite">
@@ -695,6 +829,14 @@
           <div class="hero-sub" id="heroInterestLabel">—</div>
         </div>
 
+        <div id="gastoImpactoWrap" style="display:none;">
+          <label class="misma-tarjeta-check">
+            <input type="checkbox" id="mismaTarjeta" />
+            Cruzar con mis gastos registrados (si son de esta misma tarjeta)
+          </label>
+          <div class="gasto-impacto" id="gastoImpacto" aria-live="polite"></div>
+        </div>
+
         <div class="mini-warning" id="minWarning" aria-live="polite"></div>
 
         <div class="chart-wrap">
@@ -704,6 +846,18 @@
           </div>
           <canvas id="payoffChart" height="220" role="img" aria-label="Gráfica del saldo restante mes a mes"></canvas>
           <p class="sr-only" id="chartSrSummary" aria-live="polite"></p>
+        </div>
+
+        <div class="exportar-plan">
+          <div class="ledger-title" style="margin-bottom:0.6rem;">Llévate tu plan</div>
+          <div class="exportar-acciones">
+            <button class="btn-add" type="button" onclick="descargarPlanPDF()">Descargar en PDF</button>
+            <div class="exportar-correo" id="exportarCorreo" style="display:none;">
+              <input class="input-field" type="email" id="correoDestino" placeholder="tu@correo.com" />
+              <button class="btn-add" type="button" onclick="enviarPlanCorreo()">Enviar a mi correo</button>
+            </div>
+          </div>
+          <p class="hint" id="exportarEstado" aria-live="polite"></p>
         </div>
       </div>
     </div>
@@ -717,13 +871,257 @@
     en los datos que ingresas; tu estado de cuenta real puede variar por comisiones,
     seguros u otros cargos. Para decisiones importantes, consulta a un asesor financiero.
   </p>
+  <p class="disclaimer" style="margin-top:0.75rem; border-top:none; padding-top:0;">
+    Tus datos se guardan solo en este navegador — nunca salen de tu dispositivo.
+  </p>
 </div>
 
 <script>
 const MAX_MONTHS = 600;
 
-function simulateMinimum(balance, monthlyRate, minPercent, minFloor) {
+// ---- Configuración de EmailJS (opcional) ----
+// Para activar el envío por correo: crea una cuenta gratis en emailjs.com,
+// conecta tu correo, crea una plantilla con las variables {{to_email}} y {{plan_texto}},
+// y pega aquí tus 3 identificadores. Mientras estén vacíos, la opción de correo no se muestra.
+const EMAILJS_PUBLIC_KEY = "";
+const EMAILJS_SERVICE_ID = "";
+const EMAILJS_TEMPLATE_ID = "";
+
+function emailConfigurado() {
+  return EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID;
+}
+
+// ---- Métricas de utilidad (opcional) ----
+// Para activar: crea una propiedad en analytics.google.com y pega aquí tu ID de medición (formato G-XXXXXXXXXX).
+// Mientras esté vacío, no se carga nada ni se envía ningún dato.
+// Solo se envían nombres de eventos — nunca montos ni datos financieros del usuario.
+const GA4_MEASUREMENT_ID = "";
+
+function inicializarAnalytics() {
+  if (!GA4_MEASUREMENT_ID) return;
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA4_MEASUREMENT_ID;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { dataLayer.push(arguments); };
+  gtag("js", new Date());
+  gtag("config", GA4_MEASUREMENT_ID);
+}
+
+// Registra un evento una sola vez por sesión (mide personas, no clics repetidos)
+function registrarEvento(nombre) {
+  if (!GA4_MEASUREMENT_ID || typeof gtag !== "function") return;
+  try {
+    const clave = "evento_" + nombre;
+    if (sessionStorage.getItem(clave)) return;
+    sessionStorage.setItem(clave, "1");
+    gtag("event", nombre);
+  } catch (e) {}
+}
+
+
+// Arma el resumen del plan con los datos actuales (lo usan el PDF y el correo)
+function generarResumenPlan() {
+  const balance = num("balance");
+  const apr = num("apr");
+  const monthlyRate = apr / 100 / 12;
+  const minActual = num("minActual");
+  const planned = num("plannedPayment");
+  const lump = num("lumpSum");
+  const cargosFijos = num("cargosFijos");
+  const targetMonths = parseInt(document.getElementById("targetMonths").value) || 0;
+
+  const planResult = simulateFixed(balance, monthlyRate, planned - cargosFijos, lump);
+  const requiredBase = requiredPaymentForTarget(balance - lump, monthlyRate, targetMonths);
+  const required = requiredBase !== null ? requiredBase + cargosFijos : null;
+  const gastoInfo = gastoMensualPromedio();
+  const mismaTarjeta = document.getElementById("mismaTarjeta");
+  const cruceActivo = gastoInfo && mismaTarjeta && mismaTarjeta.checked;
+
+  const lineas = [];
+  lineas.push("MI PLAN DE PAGO — Calculadora de tarjeta de crédito");
+  lineas.push("Generado el " + new Date().toLocaleDateString("es-PA", { day: "2-digit", month: "long", year: "numeric" }));
+  lineas.push("");
+  lineas.push("MI SITUACIÓN ACTUAL");
+  lineas.push("Saldo: " + fmt(balance));
+  lineas.push("Tasa anual (APR): " + apr + "%");
+  lineas.push("Pago mínimo del banco: " + fmt(minActual) + "/mes");
+  if (cargosFijos > 0) lineas.push("Cargos fijos del mes: " + fmt(cargosFijos));
+  if (lump > 0) lineas.push("Abono único hoy: " + fmt(lump));
+  lineas.push("");
+  lineas.push("MI PLAN");
+  lineas.push("Pago mensual: " + fmt(planned));
+  if (planResult.neverPaysOff) {
+    lineas.push("Resultado: con ese pago no se cubre ni el interés mensual — el saldo no baja.");
+  } else {
+    lineas.push("Termino de pagar en: " + monthsToText(planResult.months));
+    lineas.push("Interés total que pagaré: " + fmt(planResult.totalInterest));
+  }
+  if (required && required > 0 && targetMonths > 0) {
+    lineas.push("");
+    lineas.push("MI META ALTERNATIVA");
+    lineas.push("Para terminar en " + monthsToText(targetMonths) + " tendría que pagar " + fmt(required) + "/mes");
+  }
+  if (cruceActivo && !planResult.neverPaysOff) {
+    const pagoNeto = planned - gastoInfo.promedio;
+    lineas.push("");
+    lineas.push("OJO: MIS GASTOS NUEVOS");
+    lineas.push("Sigo gastando en promedio " + fmt(gastoInfo.promedio) + "/mes en la tarjeta.");
+    if (pagoNeto - cargosFijos <= balance * monthlyRate) {
+      lineas.push("A ese ritmo mi progreso real no alcanza — la tarjeta no se termina de pagar si no congelo los gastos.");
+    } else {
+      const simNeto = simulateFixed(balance, monthlyRate, pagoNeto - cargosFijos, lump);
+      lineas.push("Mi progreso real es " + fmt(pagoNeto) + "/mes → el plan pasaría de " + monthsToText(planResult.months) + " a " + monthsToText(simNeto.months) + ".");
+    }
+  }
+  lineas.push("");
+  lineas.push("Documento informativo — no constituye asesoría financiera personalizada.");
+  return lineas.join("\n");
+}
+
+function descargarPlanPDF() {
+  if (num("balance") <= 0) {
+    document.getElementById("exportarEstado").textContent = "Primero mete tu saldo en \"Tu situación actual\" — sin eso no hay plan que exportar.";
+    return;
+  }
+  const resumen = generarResumenPlan();
+  const ventana = window.open("", "_blank");
+  if (!ventana) {
+    document.getElementById("exportarEstado").textContent = "Tu navegador bloqueó la ventana — permite ventanas emergentes para descargar el PDF.";
+    return;
+  }
+  ventana.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Mi plan de pago</title>
+    <style>
+      body { font-family: Georgia, serif; color: #16263B; max-width: 640px; margin: 3rem auto; padding: 0 1.5rem; line-height: 1.6; }
+      pre { font-family: inherit; white-space: pre-wrap; font-size: 1rem; }
+    </style></head><body><pre>${resumen.replace(/</g, "&lt;")}</pre>
+    <script>window.onload = () => window.print();<\/script></body></html>`);
+  ventana.document.close();
+  registrarEvento("plan_exportado");
+  document.getElementById("exportarEstado").textContent = "En el diálogo de impresión, elige \"Guardar como PDF\".";
+}
+
+function enviarPlanCorreo() {
+  const correo = document.getElementById("correoDestino").value.trim();
+  const estado = document.getElementById("exportarEstado");
+  if (num("balance") <= 0) {
+    estado.textContent = "Primero mete tu saldo en \"Tu situación actual\" — sin eso no hay plan que enviar.";
+    return;
+  }
+  if (!correo || !correo.includes("@")) {
+    estado.textContent = "Escribe un correo válido.";
+    return;
+  }
+  estado.textContent = "Enviando...";
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: correo,
+    plan_texto: generarResumenPlan(),
+  }).then(
+    () => { registrarEvento("plan_exportado"); estado.textContent = "Listo — revisa tu bandeja de entrada (y spam, por si acaso)."; },
+    () => { estado.textContent = "No se pudo enviar. Intenta de nuevo o usa la descarga en PDF."; }
+  );
+}
+
+function inicializarEmail() {
+  if (!emailConfigurado()) return;
+  const s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+  s.onload = () => {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    document.getElementById("exportarCorreo").style.display = "flex";
+  };
+  document.head.appendChild(s);
+}
+
+
+// ---- Persistencia: los datos se guardan en el navegador del usuario ----
+const CLAVE_ESTADO = "calculadoraTarjetaEstado_v1";
+let estadoCargado = false; // el guardado se activa solo después de cargar, para no pisar datos guardados con los valores por defecto
+
+function guardarEstado() {
+  if (!estadoCargado) return;
+  try {
+    const estado = {
+      balance: document.getElementById("balance").value,
+      apr: document.getElementById("apr").value,
+      minActual: document.getElementById("minActual").value,
+      cargosFijos: document.getElementById("cargosFijos").value,
+      lumpSum: document.getElementById("lumpSum").value,
+      plannedPayment: document.getElementById("plannedPayment").value,
+      targetMonths: document.getElementById("targetMonths").value,
+      diaCorte: document.getElementById("diaCorte").value,
+      diaPago: document.getElementById("diaPago").value,
+      mismaTarjeta: document.getElementById("mismaTarjeta").checked,
+      gastos: gastos,
+    };
+    localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
+  } catch (e) {
+    // Modo privado o almacenamiento bloqueado: la app sigue funcionando, solo sin guardar
+  }
+}
+
+function borrarDatos() {
+  const seguro = confirm("¿Borrar todos tus datos guardados? La página se reiniciará con los valores por defecto.");
+  if (!seguro) return;
+  try {
+    localStorage.removeItem(CLAVE_ESTADO);
+  } catch (e) {}
+  estadoCargado = false; // evita que se re-guarde antes de recargar
+  location.reload();
+}
+
+function cargarEstado() {  try {
+    const crudo = localStorage.getItem(CLAVE_ESTADO);
+    if (!crudo) return;
+    const estado = JSON.parse(crudo);
+    const campos = ["balance", "apr", "minActual", "cargosFijos", "lumpSum", "plannedPayment", "targetMonths", "diaCorte", "diaPago"];
+    campos.forEach((id) => {
+      if (estado[id] !== undefined && estado[id] !== null) {
+        document.getElementById(id).value = estado[id];
+      }
+    });
+    if (typeof estado.mismaTarjeta === "boolean") {
+      document.getElementById("mismaTarjeta").checked = estado.mismaTarjeta;
+    }
+    if (Array.isArray(estado.gastos)) {
+      gastos = estado.gastos.filter((g) => g && g.fecha && typeof g.monto === "number");
+      gastoIdCounter = gastos.reduce((max, g) => Math.max(max, Number(g.id) || 0), 0);
+    }
+  } catch (e) {
+    // Datos corruptos o almacenamiento bloqueado: arranca limpio
+  }
+}
+
+
+// Fórmula bancaria real: mínimo del mes = % de capital × saldo + intereses del mes + cargos fijos.
+// El % de capital se deriva del mínimo que el usuario copia de su app: (mínimo − interés − cargos) ÷ saldo.
+function simulateMinimumReal(balance, monthlyRate, capitalPct, fixedCharges, floorPayment) {
   let bal = balance;
+  let months = 0;
+  let totalInterest = 0;
+  const series = [{ month: 0, balance: bal }];
+  if (bal <= 0) return { neverPaysOff: false, cappedAtMax: false, months: 0, totalInterest: 0, series };
+  while (bal > 0.5 && months < MAX_MONTHS) {
+    const interest = bal * monthlyRate;
+    let payment = bal * capitalPct + interest + fixedCharges;
+    payment = Math.max(payment, floorPayment);
+    // El cargo fijo se factura a la tarjeta: el abono neto a capital es pago − interés − cargos
+    let principal = payment - interest - fixedCharges;
+    if (principal <= 0) {
+      return { neverPaysOff: true, cappedAtMax: false, months: null, totalInterest: null, series };
+    }
+    principal = Math.min(principal, bal);
+    bal -= principal;
+    totalInterest += interest;
+    months += 1;
+    series.push({ month: months, balance: Math.max(bal, 0) });
+  }
+  const capped = bal > 0.5;
+  return { neverPaysOff: false, cappedAtMax: capped, months: capped ? null : months, totalInterest, series };
+}
+
+function simulateMinimum(balance, monthlyRate, minPercent, minFloor) {  let bal = balance;
   let months = 0;
   let totalInterest = 0;
   const series = [{ month: 0, balance: bal }];
@@ -765,8 +1163,20 @@ function simulateFixed(balance, monthlyRate, payment, lumpSum) {
   return { neverPaysOff: bal > 0.5, months, totalInterest, series };
 }
 
-function requiredPaymentForTarget(balance, monthlyRate, targetMonths) {
-  if (targetMonths <= 0 || balance <= 0) return null;
+// Promedio de gasto mensual según lo registrado en "Lo que gasto y cuándo pagar":
+// total gastado dividido entre la cantidad de meses distintos con al menos un gasto
+function gastoMensualPromedio() {
+  if (!gastos.length) return null;
+  const meses = new Set();
+  let total = 0;
+  gastos.forEach((g) => {
+    meses.add(g.fecha.slice(0, 7));
+    total += g.monto;
+  });
+  return { promedio: total / meses.size, meses: meses.size, total };
+}
+
+function requiredPaymentForTarget(balance, monthlyRate, targetMonths) {  if (targetMonths <= 0 || balance <= 0) return null;
   if (monthlyRate === 0) return balance / targetMonths;
   const r = monthlyRate;
   const n = targetMonths;
@@ -775,7 +1185,7 @@ function requiredPaymentForTarget(balance, monthlyRate, targetMonths) {
   return (balance * r) / denom;
 }
 
-function renderTimeComparison(remainingBalance, monthlyRate, plannedPayment) {
+function renderTimeComparison(remainingBalance, monthlyRate, plannedPayment, fixedCharges) {
   const tbody = document.getElementById("timeCompareBody");
   if (!tbody) return;
   tbody.innerHTML = "";
@@ -788,8 +1198,12 @@ function renderTimeComparison(remainingBalance, monthlyRate, plannedPayment) {
   const horizons = [3, 6, 12, 18, 24, 36, 48];
 
   horizons.forEach((m) => {
-    const payment = requiredPaymentForTarget(remainingBalance, monthlyRate, m);
-    const totalInterest = payment ? payment * m - remainingBalance : null;
+    const paymentBase = requiredPaymentForTarget(remainingBalance, monthlyRate, m);
+    // Usamos la misma simulación mes a mes que el resto de la app,
+    // para que este interés coincida exactamente con el del panel principal
+    const sim = paymentBase ? simulateFixed(remainingBalance, monthlyRate, paymentBase, 0) : null;
+    const totalInterest = sim && !sim.neverPaysOff ? sim.totalInterest : null;
+    const payment = paymentBase ? paymentBase + (fixedCharges || 0) : null;
     const alcanzable = payment && plannedPayment >= payment;
 
     const tr = document.createElement("tr");
@@ -829,27 +1243,51 @@ function recalculate() {
   const apr = num("apr");
   const monthlyRate = apr / 100 / 12;
   const minActual = num("minActual");
-  const minPercent = balance > 0 ? (minActual / balance) * 100 : 2;
-  const minFloor = 25; // piso de seguridad para saldos muy bajos, no se muestra al usuario
+  const cargosFijos = num("cargosFijos");
   const planned = num("plannedPayment");
   const lump = num("lumpSum");
   const targetMonths = parseInt(document.getElementById("targetMonths").value) || 0;
 
-  const minResult = simulateMinimum(balance, monthlyRate, minPercent, minFloor);
-  const planResult = simulateFixed(balance, monthlyRate, planned, lump);
-  const required = requiredPaymentForTarget(balance - lump, monthlyRate, targetMonths);
   const firstMonthInterest = balance * monthlyRate;
+
+  // ---- Estado vacío: sin saldo aún, la página invita en vez de mostrar ceros ----
+  if (balance <= 0) {
+    document.getElementById("heroPaymentLabel").textContent = fmt(planned > 0 ? planned : 0);
+    document.getElementById("heroMonths").textContent = "—";
+    document.getElementById("heroInterestLabel").textContent = "Mete tu saldo y tu tasa en \"Tu situación actual\" para ver tu resultado.";
+    document.getElementById("warnBanner").classList.remove("visible");
+    document.getElementById("minWarning").innerHTML = "";
+    const wrapVacio = document.getElementById("gastoImpactoWrap");
+    if (wrapVacio) wrapVacio.style.display = "none";
+    document.getElementById("requiredPayment").textContent = "—";
+    renderTimeComparison(0, monthlyRate, planned, cargosFijos);
+    guardarEstado();
+    return;
+  }
+
+  // Deriva el % de capital de la fórmula del banco del usuario: (mínimo − interés − cargos) ÷ saldo.
+  // Si no da positivo, el banco usa esquema de monto fijo → simulación de pago fijo.
+  const capitalPct = balance > 0 ? (minActual - firstMonthInterest - cargosFijos) / balance : 0;
+  const minFloor = Math.min(25, minActual > 0 ? minActual : 25);
+  const minResult = capitalPct > 0
+    ? simulateMinimumReal(balance, monthlyRate, capitalPct, cargosFijos, minFloor)
+    : Object.assign(simulateFixed(balance, monthlyRate, minActual - cargosFijos, 0), { cappedAtMax: false });
+
+  // Los cargos fijos se facturan a la tarjeta: reducen el abono neto de cualquier pago
+  const planResult = simulateFixed(balance, monthlyRate, planned - cargosFijos, lump);
+  const requiredBase = requiredPaymentForTarget(balance - lump, monthlyRate, targetMonths);
+  const required = requiredBase !== null ? requiredBase + cargosFijos : null;
 
   // ---- Respuesta principal: tu plan real ----
   document.getElementById("heroPaymentLabel").textContent = fmt(planned);
   document.getElementById("heroMonths").textContent = planResult.neverPaysOff ? "Nunca" : monthsToText(planResult.months);
   document.getElementById("heroInterestLabel").textContent = planResult.neverPaysOff
-    ? `Ese pago no alcanza a cubrir el interés del mes (${fmt(firstMonthInterest)}) — el saldo no baja.`
+    ? `Ese pago no alcanza a cubrir el interés${cargosFijos > 0 ? " y cargos" : ""} del mes (${fmt(firstMonthInterest + cargosFijos)}) — el saldo no baja.`
     : `En total vas a pagar ${fmt(planResult.totalInterest)} de interés.`;
 
   const warnBanner = document.getElementById("warnBanner");
   if (planResult.neverPaysOff) {
-    warnBanner.textContent = `Con ${fmt(planned)} al mes no cubres ni los intereses. Sube el pago mensual o el saldo nunca bajará.`;
+    warnBanner.textContent = `Con ${fmt(planned)} al mes no cubres ni los intereses${cargosFijos > 0 ? " y cargos" : ""}. Sube el pago mensual o el saldo nunca bajará.`;
     warnBanner.classList.add("visible");
   } else {
     warnBanner.classList.remove("visible");
@@ -860,11 +1298,13 @@ function recalculate() {
   if (!planResult.neverPaysOff) {
     if (minResult.neverPaysOff) {
       minWarning.innerHTML = `💡 Dato: si en vez de tu plan solo pagaras el <strong>mínimo del banco (${fmt(minActual)}/mes)</strong>, nunca terminarías de pagar esta tarjeta — ese pago no alcanza ni para cubrir el interés de un mes.`;
+    } else if (minResult.cappedAtMax) {
+      minWarning.innerHTML = `💡 Dato: si en vez de tu plan solo pagaras el <strong>mínimo del banco (${fmt(minActual)} hoy, que baja cada mes)</strong>, después de <strong>50 años</strong> todavía estarías debiendo — y ya habrías pagado ${fmt(minResult.totalInterest)} solo en intereses.`;
     } else {
       const monthsSaved = Math.max(minResult.months - planResult.months, 0);
       const interestSaved = minResult.totalInterest - planResult.totalInterest;
       if (interestSaved > 0) {
-        minWarning.innerHTML = `💡 Dato: si en vez de tu plan solo pagaras el <strong>mínimo del banco (${fmt(minActual)}/mes)</strong>, tardarías ${monthsToText(minResult.months)} (${monthsToText(monthsSaved)} más) y pagarías ${fmt(interestSaved)} más de interés.`;
+        minWarning.innerHTML = `💡 Dato: si en vez de tu plan solo pagaras el <strong>mínimo del banco (${fmt(minActual)} hoy, que baja cada mes)</strong>, tardarías ${monthsToText(minResult.months)} (${monthsToText(monthsSaved)} más) y pagarías ${fmt(interestSaved)} más de interés.`;
       } else {
         minWarning.innerHTML = `Tu plan y el pago mínimo del banco quedan parecidos con estos números — para ver una diferencia real, prueba subir "Tu pago mensual planeado".`;
       }
@@ -873,8 +1313,34 @@ function recalculate() {
     minWarning.innerHTML = `Primero ajusta tu pago mensual para que cubra al menos el interés — mientras tanto no podemos comparar contra el pago mínimo.`;
   }
 
+  // ---- Conexión con la pestaña de gastos: tu progreso real si sigues gastando ----
+  const impactoWrap = document.getElementById("gastoImpactoWrap");
+  const impacto = document.getElementById("gastoImpacto");
+  const mismaTarjeta = document.getElementById("mismaTarjeta");
+  const gastoInfo = gastoMensualPromedio();
+  if (impactoWrap && impacto) {
+    if (gastoInfo && !planResult.neverPaysOff && planned > 0) {
+      impactoWrap.style.display = "block";
+      if (mismaTarjeta && mismaTarjeta.checked) {
+        const pagoNeto = planned - gastoInfo.promedio;
+        if (pagoNeto - cargosFijos <= balance * monthlyRate) {
+          impacto.innerHTML = `💳 Según lo que registraste en "Lo que gasto", sigues gastando en la tarjeta un promedio de <strong>${fmt(gastoInfo.promedio)}/mes</strong>. Pagando ${fmt(planned)} pero gastando eso, tu progreso real es de <strong>${fmt(Math.max(pagoNeto, 0))}/mes</strong> — a ese ritmo la tarjeta <strong>nunca se termina de pagar</strong>. Para que tu plan de ${monthsToText(planResult.months)} sea real, necesitas congelar los gastos nuevos o subir el pago.`;
+        } else {
+          const simNeto = simulateFixed(balance, monthlyRate, pagoNeto - cargosFijos, lump);
+          const mesesExtra = simNeto.months - planResult.months;
+          impacto.innerHTML = `💳 Según lo que registraste en "Lo que gasto", sigues gastando en la tarjeta un promedio de <strong>${fmt(gastoInfo.promedio)}/mes</strong>. Eso convierte tu pago de ${fmt(planned)} en un progreso real de <strong>${fmt(pagoNeto)}/mes</strong> — tu plan pasaría de ${monthsToText(planResult.months)} a <strong>${monthsToText(simNeto.months)}</strong>${mesesExtra > 0 ? ` (${monthsToText(mesesExtra)} más)` : ""}. Congelar los gastos nuevos es la forma más rápida de recuperar ese tiempo.`;
+        }
+        impacto.style.display = "block";
+      } else {
+        impacto.style.display = "none";
+      }
+    } else {
+      impactoWrap.style.display = "none";
+    }
+  }
+
   document.getElementById("requiredPayment").textContent = required && required > 0 ? fmt(required) : "—";
-  renderTimeComparison(balance - lump, monthlyRate, planned);
+  renderTimeComparison(balance - lump, monthlyRate, planned, cargosFijos);
 
   const chartSummary = document.getElementById("chartSrSummary");
   if (chartSummary) {
@@ -957,14 +1423,25 @@ function recalculate() {
       },
     });
   }
+
+  if (usuarioModificoDatos && !planResult.neverPaysOff && balance > 0) {
+    registrarEvento("simulacion_completada");
+  }
+
+  guardarEstado();
 }
+
+let gastos = [];
+let usuarioModificoDatos = false;
+
+["balance", "apr", "minActual", "cargosFijos", "plannedPayment", "lumpSum"].forEach((id) => {
+  document.getElementById(id).addEventListener("input", () => { usuarioModificoDatos = true; });
+});
 
 document.querySelectorAll("#tab3 input").forEach((el) => el.addEventListener("input", recalculate));
 recalculate();
 
 // ---- Gastos del día a día / ciclo de corte ----
-
-let gastos = [];
 
 function pad(n) { return n.toString().padStart(2, "0"); }
 
@@ -977,18 +1454,31 @@ function formatFechaCorta(d) {
   return d.toLocaleDateString("es-PA", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// Crea una fecha con el día "topado" al último día real del mes (ej. día 31 en febrero → 28/29)
+function fechaConDiaTopado(year, month, dia) {
+  const ultimoDia = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(dia, ultimoDia));
+}
+
 // Dado un gasto y el día de corte, calcula a qué corte pertenece y cuándo vence
 function getCicloInfo(fechaStr, diaCorte, diasGracia) {
   const d = new Date(fechaStr + "T00:00:00");
   const year = d.getFullYear();
   const month = d.getMonth();
-  let corte = new Date(year, month, diaCorte);
+  let corte = fechaConDiaTopado(year, month, diaCorte);
   if (d > corte) {
-    corte = new Date(year, month + 1, diaCorte);
+    corte = fechaConDiaTopado(year, month + 1, diaCorte);
   }
   const due = new Date(corte);
   due.setDate(due.getDate() + (parseInt(diasGracia) || 0));
   return { corte, due };
+}
+
+let gastoIdCounter = 0;
+
+function nextGastoId() {
+  gastoIdCounter += 1;
+  return gastoIdCounter;
 }
 
 let rowCounter = 0;
@@ -1089,11 +1579,12 @@ function saveAllGastoRows() {
       return;
     }
 
-    gastos.push({ id: Date.now() + Math.random(), fecha, desc: descRaw || "Sin descripción", monto });
+    gastos.push({ id: nextGastoId(), fecha, desc: descRaw || "Sin descripción", monto });
     added += 1;
   });
 
   if (added > 0) {
+    registrarEvento("gastos_registrados");
     renderGastos();
   }
 
@@ -1129,10 +1620,10 @@ function getDiaCorteYGracia() {
 
   // Construimos una fecha de referencia este mes para medir cuántos días de plazo hay
   const now = new Date();
-  const corteRef = new Date(now.getFullYear(), now.getMonth(), diaCorte);
+  const corteRef = fechaConDiaTopado(now.getFullYear(), now.getMonth(), diaCorte);
   // Si el día de pago cae antes o igual que el de corte, el pago es al mes siguiente
   const pagoMonthOffset = diaPago <= diaCorte ? 1 : 0;
-  const pagoRef = new Date(now.getFullYear(), now.getMonth() + pagoMonthOffset, diaPago);
+  const pagoRef = fechaConDiaTopado(now.getFullYear(), now.getMonth() + pagoMonthOffset, diaPago);
   const diasGracia = Math.round((pagoRef - corteRef) / (1000 * 60 * 60 * 24));
 
   if (diasGracia > 0) {
@@ -1208,13 +1699,22 @@ function renderGastos() {
     `;
     summaryDiv.appendChild(box);
   });
+
+  // Actualiza la pestaña "Quiero pagar mi tarjeta" con el nuevo promedio de gastos
+  recalculate();
 }
 
 document.getElementById("gastoRowsContainer").appendChild(createGastoRow(false));
 
 document.getElementById("diaCorte").addEventListener("input", renderGastos);
 document.getElementById("diaPago").addEventListener("input", renderGastos);
+
+// Restaura lo guardado en visitas anteriores y, a partir de ahí, guarda cada cambio
+cargarEstado();
+estadoCargado = true;
 renderGastos();
+inicializarEmail();
+inicializarAnalytics();
 
 // ---- Tabs ----
 function showTab(name) {
