@@ -79,32 +79,40 @@
   }
   .subtitle { color: #5A666F; max-width: 46ch; font-size: 0.95rem; }
 
-  /* ---- Tabs ---- */
-  .tabs-nav {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
+  /* ---- Tabs (estilo chip) ---- */
+  .menu-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8A94A0;
+    margin-bottom: 0.6rem;
     margin-top: 2rem;
-    background: #FFFFFF;
-    border: 1px solid #DCD3BD;
-    border-radius: 10px;
-    padding: 5px;
+  }
+  .tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   .tab-btn {
-    background: none;
-    border: none;
-    border-radius: 7px;
-    color: #5C6B78;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.65rem 1.1rem;
+    background: #FFFFFF;
+    border: 1px solid #DCD3BD;
+    border-radius: 22px;
+    color: #16263B;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.55rem 1.2rem;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
-  .tab-btn:hover { color: #16263B; background: #F6F3EC; }
-  .tab-btn.active { color: #FBFAF6; background: #16263B; }
+  .tab-btn:hover { border-color: #16263B; }
+  .tab-btn.active {
+    background: #A8E0C4;
+    color: #14512F;
+    border-color: #A8E0C4;
+    font-weight: 600;
+  }
   .tab-panel { display: none; margin-top: 2.25rem; }
   .tab-panel.active { display: block; }
 
@@ -145,19 +153,13 @@
 
   @media (max-width: 640px) {
     body { padding: 1.5rem 1rem 3rem; }
-    .tabs-nav {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      width: 100%;
-    }
-    .tabs-nav::-webkit-scrollbar { display: none; }
-    .tab-btn { padding: 0.85rem 0.7rem; font-size: 0.66rem; white-space: nowrap; min-height: 44px; }
+    .tabs-nav { width: 100%; }
+    .tab-btn { font-size: 0.82rem; padding: 0.55rem 1rem; }
     .result-grid { grid-template-columns: 1fr; }
     .row-2 { grid-template-columns: 1fr; }
     .paper-card, .ledger-panel { padding: 1.25rem; }
 
-    /* Barra superior: pestañas arriba, botón de borrar abajo alineado a la izquierda */
+    /* Barra superior: chips arriba, botón de borrar abajo alineado a la izquierda */
     .barra-superior { flex-direction: column; align-items: stretch; gap: 0.75rem; }
     .borrar-datos-wrap { align-items: flex-start; align-self: flex-start; }
 
@@ -197,7 +199,7 @@
     .headline { font-size: 1.7rem; }
     .paper-card, .ledger-panel { padding: 1rem; }
     .hero-number { font-size: 2rem; }
-    .tab-btn { font-size: 0.62rem; padding: 0.85rem 0.55rem; }
+    .tab-btn { font-size: 0.78rem; padding: 0.5rem 0.85rem; }
   }
 
   .paper-card {
@@ -448,7 +450,6 @@
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-top: 2rem;
   }
   .barra-superior .tabs-nav { margin-top: 0; }
 
@@ -534,21 +535,27 @@
   .empty-state { color: #5A666F; font-size: 0.82rem; padding: 0.75rem 0; display: none; }
   .cycle-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
 
-  /* ---- Filtros de gastos ---- */
-  .gasto-filtros { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1.25rem; }
+  /* ---- Filtros de gastos (mismo estilo chip que las pestañas) ---- */
+  .gasto-filtros { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem; }
   .filtro-btn {
-    background: none;
+    background: #FFFFFF;
     border: 1px solid #DCD3BD;
-    border-radius: 20px;
-    color: #5C6B78;
+    border-radius: 22px;
+    color: #16263B;
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.78rem;
-    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.42rem 1rem;
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
-  .filtro-btn:hover { border-color: #16263B; color: #16263B; }
-  .filtro-btn.active { background: #16263B; color: #FBFAF6; border-color: #16263B; }
+  .filtro-btn:hover { border-color: #16263B; }
+  .filtro-btn.active {
+    background: #A8E0C4;
+    color: #14512F;
+    border-color: #A8E0C4;
+    font-weight: 600;
+  }
 
   /* ---- Tarjeta de gasto (V2) ---- */
   .gasto-card {
@@ -650,6 +657,7 @@
     </p>
   </header>
 
+  <div class="menu-label">¿Qué quieres hacer?</div>
   <div class="barra-superior">
     <nav class="tabs-nav" role="tablist" aria-label="Secciones de la calculadora">
       <button class="tab-btn active" id="btn-tab1" role="tab" aria-selected="true" aria-controls="tab1" onclick="showTab('tab1')">Entendiendo mi tarjeta</button>
