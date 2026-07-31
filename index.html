@@ -1,40 +1,211 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" href="favicon.ico" sizes="any" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<html lang="es"><head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora de tarjeta de crédito: cuánto pagar y cuándo sales</title>
-<meta name="description" content="Mete tu saldo, tasa y pago mínimo y mira cuánto tardarás en pagar tu tarjeta — y cómo salir antes. Gratis, sin registro, tus datos no salen de tu teléfono." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<meta name="description" content="Mete tu saldo, tasa y pago mínimo y mira cuánto tardarás en pagar tu tarjeta — y cómo salir antes. Gratis, sin registro, tus datos no salen de tu teléfono.">
 
 <!-- Open Graph: cómo se ve el link al compartirlo en WhatsApp, Instagram, Facebook, etc.
      IMPORTANTE: verifica que la URL de abajo sea la de tu sitio en producción (y actualízala si cambias de dominio). -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://tarjetadecredito.vercel.app/" />
-<meta property="og:title" content="Pagar tu tarjeta de crédito sí es posible" />
-<meta property="og:description" content="Entiende tu tarjeta y sabe cuánto y cuándo pagar. Sin registro, tus datos no salen de tu dispositivo." />
-<meta property="og:image" content="https://tarjetadecredito.vercel.app/og-image.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:locale" content="es_LA" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Pagar tu tarjeta de crédito sí es posible" />
-<meta name="twitter:description" content="Entiende tu tarjeta y sabe cuánto y cuándo pagar. Sin registro, tus datos no salen de tu dispositivo." />
-<meta name="twitter:image" content="https://tarjetadecredito.vercel.app/og-image.png" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tarjetadecredito.vercel.app/">
+<meta property="og:title" content="Pagar tu tarjeta de crédito sí es posible">
+<meta property="og:description" content="Entiende tu tarjeta y sabe cuánto y cuándo pagar. Sin registro, tus datos no salen de tu dispositivo.">
+<meta property="og:image" content="https://tarjetadecredito.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_LA">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pagar tu tarjeta de crédito sí es posible">
+<meta name="twitter:description" content="Entiende tu tarjeta y sabe cuánto y cuándo pagar. Sin registro, tus datos no salen de tu dispositivo.">
+<meta name="twitter:image" content="https://tarjetadecredito.vercel.app/og-image.png">
+<script>
+  // Se aplica antes de pintar, para que quien usa modo oscuro no vea un destello blanco
+  (function () {
+    try {
+      var t = localStorage.getItem("calculadoraTarjetaTema");
+      if (t !== "dark" && t !== "light") {
+        t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  :root {
+    /* Superficies */
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-alt: #FAFAFB;
+    --surface-input: #FAFAFB;
+    /* Tinta */
+    --ink: #16161A;
+    --ink-2: #3A3A42;
+    --ink-3: #6F6F76;
+    --ink-4: #6F6F76;
+    /* Bordes */
+    --line: #E6E6EA;
+    --line-soft: #F0F0F3;
+    /* Acentos — negro como acción, amarillo como marca */
+    --primary: #16161A;
+    --primary-strong: #000000;
+    --primary-soft: #FFF4BF;
+    --primary-tint: #FFFAE6;
+    --mark: #FFE24D;
+    --green: #1F7A5C;
+    --green-brand: #22936C;
+    --green-soft: #C7E9DA;
+    --green-tint: #EFF8F4;
+    --amber: #8A6300;
+    --amber-tint: #FFF4BF;
+    --red: #A62A2A;
+    --red-brand: #C93B3B;
+    --red-soft: #F0BDBD;
+    --red-tint: #FBEDED;
+    /* Elevación — plana, al estilo recibo */
+    --shadow-sm: 0 1px 2px rgba(22,22,26,.04);
+    --shadow-md: 0 1px 2px rgba(22,22,26,.04), 0 12px 34px -18px rgba(22,22,26,.16);
+    --shadow-lg: 0 1px 2px rgba(22,22,26,.04), 0 24px 48px -24px rgba(22,22,26,.22);
+    /* Radios */
+    --r-sm: 8px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    /* Motion */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* --- Marca Finanzas Sin Paja: cifras en mono --- */
+  .hero-number, .result-number, .gasto-card-monto, .tab-num, .tip-num {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .tab-num, .tip-num { font-weight: 700; }
+  /* Resaltador amarillo de la marca */
+  .mark { background: linear-gradient(to top, var(--mark) 0 42%, transparent 42%); padding: 0 .08em; }
+  .headline { letter-spacing: -.035em; }
+
+  /* ---- Modo oscuro ---- */
+  [data-theme="dark"] {
+    --bg: #121215;
+    --surface: #17171B;
+    --surface-alt: #1C1C21;
+    --surface-input: #121215;
+    --ink: #F5F5F4;
+    --ink-2: #D6D6D9;
+    --ink-3: #9A9AA1;
+    --ink-4: #9A9AA1;
+    --line: #2A2A31;
+    --line-soft: #232329;
+    --primary: #FFE24D;
+    --primary-strong: #FFEC80;
+    --primary-soft: #3A3413;
+    --primary-tint: #26220C;
+    --mark: #FFE24D;
+    --green: #6BD3AC;
+    --green-brand: #6BD3AC;
+    --green-soft: #1B4438;
+    --green-tint: #122C25;
+    --amber: #F0C64E;
+    --amber-tint: #33290A;
+    --red: #F0A3A3;
+    --red-brand: #E07A7A;
+    --red-soft: #5C2222;
+    --red-tint: #2E1414;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-md: 0 2px 6px rgba(0,0,0,.45), 0 12px 28px -12px rgba(0,0,0,.6);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,.5), 0 24px 48px -20px rgba(0,0,0,.7);
+  }
+  /* Piezas que necesitan ajuste explícito en oscuro */
+  [data-theme="dark"] .filtro-btn.active { color: var(--primary-strong); background: var(--primary-soft); border-color: var(--primary-soft); }
+  [data-theme="dark"] .tab-btn.active { color: var(--ink); background: #26262E; }
+  [data-theme="dark"] .tab-btn.active .tab-num { background: var(--primary); border-color: var(--primary); color: var(--bg); }
+  [data-theme="dark"] .btn-add { background: var(--primary); color: var(--bg); }
+  [data-theme="dark"] .btn-add:hover { background: var(--primary-strong); }
+  [data-theme="dark"] .result-box.good { border-color: var(--green-soft); }
+  [data-theme="dark"] .result-box.warn { border-color: var(--red-soft); }
+  [data-theme="dark"] .mini-warning { border-color: var(--amber-tint); color: var(--amber); }
+  [data-theme="dark"] .gasto-impacto { border-color: var(--red-soft); color: var(--red); }
+  [data-theme="dark"] .warn-banner { border-color: var(--red-soft); }
+  [data-theme="dark"] .tag.ok { background: var(--green-tint); color: var(--green); }
+  [data-theme="dark"] .tag.due { background: var(--amber-tint); color: var(--amber); }
+  [data-theme="dark"] .result-box.good .result-label, [data-theme="dark"] .result-box.good .result-sub,
+  [data-theme="dark"] .result-box.warn .result-label, [data-theme="dark"] .result-box.warn .result-sub { color: var(--ink-2); }
+  [data-theme="dark"] .tag.late { background: var(--red-tint); color: var(--red); }
+  [data-theme="dark"] .gasto-estado.ok { background: var(--green-tint); color: var(--green); }
+  [data-theme="dark"] .gasto-estado.due { background: var(--amber-tint); color: var(--amber); }
+  [data-theme="dark"] .gasto-estado.late { background: var(--red-tint); color: var(--red); }
+  [data-theme="dark"] .gasto-estado.pagado { background: var(--line-soft); color: var(--ink-3); }
+  [data-theme="dark"] .gasto-btn-pagado { border-color: var(--green-soft); }
+  [data-theme="dark"] .glossary-example { border-left-color: var(--green); }
+  [data-theme="dark"] .btn-borrar-datos:hover { border-color: var(--red-soft); }
+
+  body, .ledger-panel, .paper-card, .tab-btn, .filtro-btn, .input-field, .gasto-card {
+    transition: background-color .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+  }
+
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .rise { animation: riseIn .8s var(--ease) both; }
+  .rise-1 { animation-delay: .05s; }
+  .rise-2 { animation-delay: .13s; }
+  .rise-3 { animation-delay: .21s; }
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: none; }
+    * { transition: none !important; }
+  }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: #F6F3EC;
-    color: #26323A;
-    font-family: 'IBM Plex Sans', sans-serif;
-    padding: 2.5rem 1.25rem 4rem;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 3rem 1.5rem 5rem;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; }
+  .wrap { max-width: 1140px; margin: 0 auto; }
 
   .sr-only {
     position: absolute;
@@ -54,66 +225,178 @@
   .tab-btn:focus-visible,
   .btn-add:focus-visible,
   .btn-del:focus-visible {
-    outline: 2px solid #3FA37A;
+    outline: 2px solid var(--green);
     outline-offset: 2px;
     border-radius: 2px;
   }
-  .input-field:focus-visible { outline: 2px solid #2F7A5E; outline-offset: 1px; }
+  /* Campo de entrada: no tenía NINGUNA regla base (hallazgo crítico de la auditoría) */
+  .input-field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    padding: 0.7rem 0.85rem;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    line-height: 1.4;
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+  }
+  .input-field::placeholder { color: var(--ink-4); font-weight: 400; }
+  .input-field:hover { border-color: var(--ink-4); }
+  .input-field.field-error { border-color: var(--red-brand); box-shadow: 0 0 0 3px rgba(239,68,68,.16); }
+  .input-field:focus,
+  .input-field:focus-visible {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26,86,219,.16);
+  }
 
   /* El texto de ayuda sobre el fondo claro del formulario necesita más contraste */
-  .paper-card .hint { color: #4B5B4D; }
+  .hint {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--ink-3);
+    line-height: 1.5;
+    margin-top: 0.35rem;
+  }
+
+  /* Avisos financieros: caja + color según severidad */
+  .warn-banner {
+    display: none;
+    background: var(--red-tint);
+    border: 1px solid var(--red-soft);
+    color: var(--red);
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.55;
+    padding: 0.95rem 1.15rem;
+    border-radius: var(--r-md);
+    margin-bottom: 1.15rem;
+  }
+  .warn-banner.visible { display: block; }
+
+  .mini-warning {
+    background: var(--amber-tint);
+    border: 1px solid var(--mark);
+    color: var(--amber);
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 0.95rem 1.15rem;
+    border-radius: var(--r-md);
+    margin-bottom: 1.5rem;
+  }
+  .mini-warning strong { font-weight: 700; color: var(--ink); }
+  .mini-warning:empty { display: none; }
+
+  .gasto-impacto {
+    background: var(--red-tint);
+    border: 1px solid var(--red-soft);
+    color: var(--red);
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 0.95rem 1.15rem;
+    border-radius: var(--r-md);
+    margin-bottom: 1.5rem;
+  }
+  .gasto-impacto strong { font-weight: 700; color: var(--ink); }
   .eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    color: #5C6B78;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.01em;
+    color: var(--ink-3);
+    text-transform: none;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
   }
   .headline {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: clamp(1.9rem, 4vw, 2.9rem);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
     line-height: 1.1;
-    color: #16263B;
-    margin: 0.4rem 0 0.5rem;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 0.85rem 0 0.7rem;
+    max-width: 20ch;
   }
-  .subtitle { color: #5A666F; max-width: 46ch; font-size: 0.95rem; }
+  .subtitle {
+    color: var(--ink-2);
+    max-width: 52ch;
+    font-size: 1.02rem;
+    font-weight: 400;
+    line-height: 1.55;
+  }
 
   /* ---- Tabs (estilo chip) ---- */
   .menu-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #8A94A0;
-    margin-bottom: 0.6rem;
-    margin-top: 2rem;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    margin-top: 2.75rem;
   }
   .tabs-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 2px;
+    background: var(--line-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
   }
   .tab-btn {
-    background: #FFFFFF;
-    border: 1px solid #DCD3BD;
-    border-radius: 22px;
-    color: #16263B;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    background: none;
+    border: none;
+    border-radius: 999px;
+    color: var(--ink-3);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.92rem;
     font-weight: 500;
-    padding: 0.55rem 1.2rem;
+    padding: 0.68rem 1.2rem;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    box-shadow: none;
+    transition: all .2s var(--ease);
   }
-  .tab-btn:hover { border-color: #16263B; }
+  .tab-btn:hover { color: var(--ink); }
   .tab-btn.active {
-    background: #A8E0C4;
-    color: #14512F;
-    border-color: #A8E0C4;
+    background: var(--surface);
+    color: var(--ink);
     font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
-  .tab-panel { display: none; margin-top: 2.25rem; }
+  .tab-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-right: 0.55rem;
+    transition: all .2s var(--ease);
+  }
+  .tab-btn.active .tab-num { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .tab-panel { display: none; margin-top: 2.75rem; }
   .tab-panel.active { display: block; }
 
   .grid-2col {
@@ -135,7 +418,7 @@
   /* Rango tablet/laptop: 2 columnas arriba (datos + resultado), meta y comparación abajo a lo ancho */
   @media (max-width: 1300px) {
     .grid-3col {
-      grid-template-columns: 0.85fr 1.15fr;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
       grid-template-areas: "datos resultado" "meta meta";
     }
     .grid-3col > .paper-card { grid-area: datos; }
@@ -143,18 +426,18 @@
     .dashboard-col-3 { grid-area: meta; }
     /* La meta y la comparación, lado a lado cuando van a lo ancho */
     .dashboard-col-3 { flex-direction: row; gap: 1.5rem; align-items: start; }
-    .dashboard-col-3 > .ledger-panel { flex: 1; margin-top: 0 !important; }
+    .dashboard-col-3 > .ledger-panel { flex: 1; min-width: 0; margin-top: 0 !important; }
   }
   @media (max-width: 800px) {
-    .grid-3col { grid-template-columns: 1fr; grid-template-areas: "datos" "resultado" "meta"; }
-    .dashboard-col-3 { flex-direction: column; }
+    .grid-3col { grid-template-columns: minmax(0, 1fr); grid-template-areas: "datos" "resultado" "meta"; }
+    .dashboard-col-3 { flex-direction: column; align-items: stretch; }
     .dashboard-col-3 > .ledger-panel:last-child { margin-top: 1.25rem !important; }
   }
 
   @media (max-width: 640px) {
     body { padding: 1.5rem 1rem 3rem; }
     .tabs-nav { width: 100%; }
-    .tab-btn { font-size: 0.82rem; padding: 0.55rem 1rem; }
+    .tab-btn { font-size: 0.86rem; padding: 0.7rem 1.1rem; min-height: 44px; }
     .result-grid { grid-template-columns: 1fr; }
     .row-2 { grid-template-columns: 1fr; }
     .paper-card, .ledger-panel { padding: 1.25rem; }
@@ -162,310 +445,77 @@
     /* Barra superior: chips arriba, botón de borrar abajo alineado a la izquierda */
     .barra-superior { flex-direction: column; align-items: stretch; gap: 0.75rem; }
     .borrar-datos-wrap { align-items: flex-start; align-self: flex-start; }
-
-    /* Campo de correo a ancho completo para no desbordar */
-    .exportar-correo { width: 100%; }
-    .exportar-correo .input-field { width: 100%; }
-    .exportar-acciones { align-items: stretch; }
-    .exportar-acciones .btn-add { width: 100%; }
-
-    /* Tabla de comparación de plazos: un poco más compacta */
-    .expense-table { font-size: 0.78rem; }
-    .expense-table th, .expense-table td { padding: 0.5rem 0.3rem; }
-
-    /* Meta de meses: input y resultado apilados */
-    .target-row { flex-direction: column; align-items: stretch; }
-    .target-row .input-field { width: 100% !important; }
-
-    /* Formulario de captura de gastos: apilar los 3 campos en una columna */
-    .gasto-row {
-      display: flex !important;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-    .gasto-row .input-field { width: 100%; }
-    .gasto-row .btn-row-remove {
-      align-self: flex-start;
-      width: auto;
-      min-width: 0;
-      color: #A83A2B;
-      font-size: 0.85rem;
-    }
-    .gasto-row .btn-row-remove::after { content: " Quitar"; }
+    /* Cabecera: el interruptor va arriba del título, no compitiendo a su lado */
+    .header-fila { flex-direction: column-reverse; align-items: flex-start; gap: 1.1rem; }
+    .tema-switch { margin-top: 0; align-self: flex-start; }
+    .tema-op { min-height: 40px; padding: 0.5rem 0.9rem; }
+    .btn-borrar-datos { min-height: 44px; padding: 0.7rem 1.1rem; }
+    .zona-reinicio { flex-direction: column; align-items: stretch; }
+    .zona-reinicio .btn-borrar-datos { width: 100%; }
   }
 
-  @media (max-width: 400px) {
-    body { padding: 1.25rem 0.85rem 2.5rem; }
-    .headline { font-size: 1.7rem; }
-    .paper-card, .ledger-panel { padding: 1rem; }
-    .hero-number { font-size: 2rem; }
-    .tab-btn { font-size: 0.78rem; padding: 0.5rem 0.85rem; }
-  }
 
-  .paper-card {
-    background: #EDE7D8;
-    color: #16263B;
-    border-radius: 4px;
-    padding: 1.75rem;
-    box-shadow: 0 12px 28px -18px rgba(22,38,59,0.25);
+  /* Cabecera: título a la izquierda, control de apariencia a la derecha */
+  .header-fila {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
   }
-  .paper-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #5C6B5E;
-    border-bottom: 1px solid #C9C1AC;
-    padding-bottom: 0.6rem;
-    margin-bottom: 1.1rem;
+  .header-texto { min-width: 0; }
+
+  /* Interruptor de apariencia: pista hundida con dos opciones.
+     Deliberadamente distinto de los chips de navegación: más pequeño,
+     agrupado en una sola pieza y con fondo hundido en vez de elevado. */
+  .tema-switch {
+    display: inline-flex;
+    flex-shrink: 0;
+    background: var(--line-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+    margin-top: 0.35rem;
   }
-  .field { margin-bottom: 1rem; }
-  .label {
-    display: block;
+  .tema-op {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 0.78rem;
     font-weight: 500;
-    color: #3A4A3D;
-    margin-bottom: 0.3rem;
-  }
-  .hint { font-size: 0.7rem; color: #74806F; margin-top: 0.25rem; }
-  .input-field {
-    width: 100%;
-    background: #F8F5EC;
-    border: 1px solid #C9C1AC;
-    border-radius: 3px;
-    padding: 0.55rem 0.7rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.95rem;
-    color: #16263B;
-  }
-  .input-field:focus { outline: 2px solid #2F7A5E; outline-offset: 1px; }
-  .input-field.field-error { border-color: #A83A2B; outline: 2px solid #E9BBAE; }
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
-
-  .ledger-panel {
-    background: #FFFFFF;
-    border: 1px solid #DCD3BD;
-    border-radius: 4px;
-    padding: 1.75rem;
-  }
-  .ledger-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #5C6B78;
-    margin-bottom: 1rem;
-  }
-  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-  .result-box { border: 1px solid #E3DCC9; border-radius: 3px; padding: 1rem; background: #FBFAF6; }
-  .result-box.good { border-color: #B7E0C9; background: #EDF7F1; }
-  .result-box.warn { border-color: #EFC6BA; background: #FCF1EC; }
-  .result-label {
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
-    color: #5C6B78; margin-bottom: 0.35rem; font-family: 'IBM Plex Mono', monospace;
-  }
-  .result-number { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 600; color: #16263B; }
-  .result-sub { font-size: 0.78rem; color: #5A666F; margin-top: 0.2rem; }
-
-  .savings-line {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    color: #278059;
-    border-top: 1px dashed #DCD3BD;
-    padding-top: 0.9rem;
-    margin-top: 0.2rem;
-  }
-  .savings-line.negative { color: #A83A2B; }
-
-  .hero-result { margin-bottom: 1.1rem; }
-  .hero-label { font-size: 1rem; color: #35414A; margin-bottom: 0.15rem; }
-  .hero-label strong { color: #16263B; }
-  .hero-number {
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 2.5rem;
-    line-height: 1.05;
-    color: #16263B;
-  }
-  .hero-sub { font-size: 0.95rem; color: #5A666F; margin-top: 0.3rem; }
-
-  .mini-warning {
-    background: #F8EFD9;
-    border: 1px solid #E9D9A8;
-    border-radius: 4px;
-    padding: 0.8rem 1rem;
-    font-size: 0.85rem;
-    color: #5C4A12;
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-  }
-  .mini-warning strong { color: #16263B; }
-
-  .gasto-impacto {
-    background: #FCF1EC;
-    border: 1px solid #EFC6BA;
-    border-radius: 4px;
-    padding: 0.8rem 1rem;
-    font-size: 0.85rem;
-    color: #6E2A1D;
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-  }
-  .gasto-impacto strong { color: #16263B; }
-
-  .misma-tarjeta-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    color: #35414A;
-    margin-bottom: 0.5rem;
+    color: var(--ink-3);
     cursor: pointer;
-    user-select: none;
+    white-space: nowrap;
+    transition: all .2s var(--ease);
   }
-  .misma-tarjeta-check input {
-    width: 16px;
-    height: 16px;
-    accent-color: #2F7A5E;
-    cursor: pointer;
+  .tema-op:hover { color: var(--ink); }
+  .tema-op[aria-pressed="false"] { color: var(--ink-3); }
+  [data-theme="dark"] .tema-op[aria-pressed="false"] { color: var(--ink-2); }
+  .tema-op[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
   }
-
-  .chart-wrap { margin-top: 1.5rem; }
-  .legend-row { display: flex; gap: 1rem; margin-bottom: 0.6rem; font-size: 0.75rem; color: #5A666F; }
-  .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-  .legend-dash {
-    display: inline-block;
-    width: 16px;
-    height: 0;
-    border-top: 2px dashed #C05746;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-
-  .warn-banner {
-    background: #FCF1EC;
-    border: 1px solid #EFC6BA;
-    color: #A83A2B;
-    font-size: 0.82rem;
-    padding: 0.7rem 0.9rem;
-    border-radius: 3px;
-    margin-bottom: 1rem;
-    display: none;
-  }
-  .warn-banner.visible { display: block; }
-
-  .section-title {
-    font-family: 'Fraunces', serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #16263B;
-    margin-bottom: 0.9rem;
-  }
-
-  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-  .tip-card { background: #FFFFFF; border: 1px solid #DCD3BD; border-radius: 4px; padding: 1.1rem; }
-  .tip-num { font-family: 'IBM Plex Mono', monospace; color: #8A6412; font-size: 0.75rem; margin-bottom: 0.4rem; }
-  .tip-text { font-size: 0.86rem; color: #35414A; line-height: 1.4; }
-
-  .glossary-item { border-top: 1px solid #DCD3BD; padding: 1rem 0; }
-  .glossary-item:first-child { border-top: none; padding-top: 0; }
-  .glossary-term {
-    font-family: 'Fraunces', serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #16263B;
-    margin-bottom: 0.3rem;
-  }
-  .glossary-def { font-size: 0.86rem; color: #35414A; line-height: 1.5; }
-  .glossary-example {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    color: #278059;
-    margin-top: 0.4rem;
-  }
-
-  .disclaimer {
-    font-size: 0.72rem;
-    color: #5A666F;
-    border-top: 1px solid #DCD3BD;
-    margin-top: 3rem;
-    padding-top: 1.2rem;
-    max-width: 70ch;
-  }
-
-  .target-row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
-
-  .expense-form { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.1rem; }
-  .expense-form .field-inline { flex: 1; min-width: 140px; }
-
-  .gasto-rows-header {
-    display: grid;
-    grid-template-columns: 150px 1fr 120px 32px;
-    gap: 0.6rem;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #5C6B78;
-    font-family: 'IBM Plex Mono', monospace;
-    margin-bottom: 0.5rem;
-  }
-  .gasto-row {
-    display: grid;
-    grid-template-columns: 150px 1fr 120px 32px;
-    gap: 0.6rem;
-    margin-bottom: 0.6rem;
-    align-items: center;
-  }
-  .gasto-row .input-field { margin: 0; }
-  .btn-row-remove {
-    background: none;
-    border: none;
-    color: #5C6B78;
-    cursor: pointer;
-    font-size: 1.1rem;
-    line-height: 1;
-    padding: 0.4rem;
-    min-height: 40px;
-    min-width: 32px;
-    border-radius: 3px;
-  }
-  .btn-row-remove:hover { color: #A83A2B; background: #FCF1EC; }
-  .btn-link-add {
-    background: none;
-    border: none;
-    color: #278059;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 0.5rem 0;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .btn-link-add:hover { color: #16263B; }
-
-  .barra-superior {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .barra-superior .tabs-nav { margin-top: 0; }
+  .tema-op:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
   .btn-borrar-datos {
-    background: none;
-    border: 1px solid #DCD3BD;
-    border-radius: 3px;
-    color: #A83A2B;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.75rem;
-    padding: 0.5rem 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-3);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.8rem;
+    padding: 0.55rem 1rem;
     cursor: pointer;
     white-space: nowrap;
     align-self: center;
+    transition: all .2s var(--ease);
   }
-  .btn-borrar-datos:hover { background: #FCF1EC; border-color: #EFC6BA; }
+  .btn-borrar-datos:hover { background: var(--red-tint); border-color: var(--red-soft); color: var(--red); }
   .borrar-datos-wrap {
     display: flex;
     flex-direction: column;
@@ -473,9 +523,9 @@
     gap: 0.25rem;
     align-self: center;
   }
-  .borrar-datos-hint { font-size: 0.66rem; color: #5A666F; }
+  .borrar-datos-hint { font-size: 0.75rem; color: var(--ink-3); }
 
-  .exportar-plan { border-top: 1px dashed #DCD3BD; margin-top: 1.5rem; padding-top: 1.25rem; }
+  .exportar-plan { border-top: 1px dashed var(--line); margin-top: 1.5rem; padding-top: 1.25rem; }
   .exportar-acciones { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
   .exportar-correo { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
   .exportar-correo .input-field { width: 210px; }
@@ -488,13 +538,34 @@
     margin-top: 0.75rem;
     margin-bottom: 0.4rem;
   }
+
+  /* Fila de captura de gastos: rejilla compartida entre encabezado y fila,
+     así las etiquetas Fecha/Descripción/Monto siempre alinean con su input */
+  .gasto-rows-header {
+    display: grid;
+    grid-template-columns: 150px 1fr 120px 40px;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .gasto-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 120px 40px;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .gasto-row .input-field { width: 100%; }
+
   @media (max-width: 640px) {
     .gasto-rows-header { display: none; }
     .gasto-row {
       grid-template-columns: 1fr 1fr;
       grid-template-areas: "fecha monto" "desc desc" "remove remove";
-      border: 1px solid #EEE8D9;
-      border-radius: 4px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--r-sm);
       padding: 0.6rem;
       margin-bottom: 0.75rem;
     }
@@ -504,67 +575,77 @@
     .gasto-row .row-remove { grid-area: remove; justify-self: end; }
   }
   .btn-add {
-    background: #2F7A5E;
-    color: #FBFAF6;
+    background: var(--ink);
+    color: #FFFFFF;
     border: none;
-    border-radius: 3px;
-    padding: 0.6rem 1.1rem;
-    font-family: 'IBM Plex Sans', sans-serif;
+    border-radius: 999px;
+    padding: 0.7rem 1.4rem;
+    min-height: 44px;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all .2s var(--ease);
   }
-  .btn-add:hover { background: #278059; }
+  .btn-add:hover { background: #000000; transform: translateY(-1px); box-shadow: var(--shadow-md); }
   table.expense-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
   .expense-table th {
     text-align: left;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #5C6B78;
-    border-bottom: 1px solid #DCD3BD;
-    padding: 0.5rem 0.4rem;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--line);
+    padding: 0.7rem 0.5rem;
   }
-  .expense-table td { padding: 0.55rem 0.4rem; border-bottom: 1px solid #EEE8D9; color: #26323A; vertical-align: middle; }
-  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.66rem; font-family: 'IBM Plex Mono', monospace; margin-left: 0.4rem; }
-  .tag.ok { background: #E3F3EA; color: #278059; }
-  .tag.due { background: #F8EFD9; color: #8A6412; }
-  .tag.late { background: #FCE4DE; color: #A83A2B; }
-  .btn-del { background: none; border: none; color: #A83A2B; cursor: pointer; font-size: 0.8rem; padding: 0.5rem 0.6rem; min-height: 40px; }
-  .empty-state { color: #5A666F; font-size: 0.82rem; padding: 0.75rem 0; display: none; }
+  .expense-table td { padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--line-soft); color: var(--ink-2); vertical-align: middle; font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.74rem; font-weight: 500; font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif; margin-left: 0.4rem; }
+  .tag.ok { background: var(--green-tint); color: var(--green); }
+  .tag.due { background: var(--amber-tint); color: var(--amber); }
+  .tag.late { background: var(--red-tint); color: var(--red); }
+  .btn-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 0.8rem; padding: 0.5rem 0.6rem; min-height: 40px; }
+  .empty-state { color: var(--ink-3); font-size: 0.82rem; padding: 0.75rem 0; display: none; }
   .cycle-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
 
   /* ---- Filtros de gastos (mismo estilo chip que las pestañas) ---- */
   .gasto-filtros { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem; }
   .filtro-btn {
-    background: #FFFFFF;
-    border: 1px solid #DCD3BD;
-    border-radius: 22px;
-    color: #16263B;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.84rem;
     font-weight: 500;
-    padding: 0.42rem 1rem;
+    padding: 0.45rem 1.05rem;
+    min-height: 44px;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: all .2s var(--ease);
   }
-  .filtro-btn:hover { border-color: #16263B; }
+  .filtro-btn:hover { border-color: var(--ink-4); color: var(--ink); }
   .filtro-btn.active {
-    background: #A8E0C4;
-    color: #14512F;
-    border-color: #A8E0C4;
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+    border-color: var(--primary-soft);
     font-weight: 600;
   }
 
   /* ---- Tarjeta de gasto (V2) ---- */
   .gasto-card {
-    background: #FBFAF6;
-    border: 1px solid #E3DCC9;
-    border-radius: 8px;
-    padding: 1rem 1.15rem;
-    margin-bottom: 0.7rem;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+    padding: 1.15rem 1.3rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .25s var(--ease);
   }
+  .gasto-card:hover { box-shadow: var(--shadow-md); }
   .gasto-card-top {
     display: flex;
     justify-content: space-between;
@@ -573,26 +654,29 @@
     margin-bottom: 0.75rem;
   }
   .gasto-card-desc {
-    font-family: 'Fraunces', serif;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #16263B;
-    line-height: 1.2;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1.3;
   }
   .gasto-card-desc small {
     display: block;
-    font-family: 'IBM Plex Sans', sans-serif;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 0.72rem;
     font-weight: 400;
-    color: #8A94A0;
-    margin-top: 0.15rem;
+    color: var(--ink-4);
+    margin-top: 0.2rem;
   }
   .gasto-card-monto {
-    font-family: 'Fraunces', serif;
-    font-size: 1.35rem;
-    font-weight: 600;
-    color: #16263B;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
   .gasto-card-foot {
     display: flex;
@@ -600,74 +684,442 @@
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    border-top: 1px solid #EEE8D9;
+    border-top: 1px solid var(--line-soft);
     padding-top: 0.7rem;
   }
-  .gasto-card-vence { font-size: 0.82rem; color: #5A666F; }
-  .gasto-card-vence b { color: #16263B; font-weight: 600; }
-  .gasto-card-derecha { display: flex; align-items: center; gap: 0.6rem; }
+  .gasto-card-vence { font-size: 0.82rem; color: var(--ink-3); }
+  .gasto-card-vence b { color: var(--ink); font-weight: 600; }
+  .gasto-card-derecha { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; flex-wrap: wrap; }
   .gasto-estado {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
     white-space: nowrap;
   }
-  .gasto-estado.ok { background: #E3F3EA; color: #278059; }
-  .gasto-estado.due { background: #F8EFD9; color: #8A6412; }
-  .gasto-estado.late { background: #FCE4DE; color: #A83A2B; }
-  .gasto-estado.pagado { background: #EAECEE; color: #5A666F; }
+  .gasto-estado.ok { background: var(--green-tint); color: var(--green); }
+  .gasto-estado.due { background: var(--amber-tint); color: var(--amber); }
+  .gasto-estado.late { background: var(--red-tint); color: var(--red); }
+  .gasto-estado.pagado { background: var(--line-soft); color: var(--ink-3); }
   .gasto-btn-pagado {
-    background: none;
-    border: 1px solid #B7E0C9;
-    border-radius: 5px;
-    color: #278059;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.72rem;
-    padding: 0.3rem 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--green-soft);
+    border-radius: 999px;
+    color: var(--green);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.76rem;
+    padding: 0.38rem 0.85rem;
+    min-height: 44px;
     cursor: pointer;
     white-space: nowrap;
+    transition: all .2s var(--ease);
   }
-  .gasto-btn-pagado:hover { background: #E3F3EA; }
+  .gasto-btn-pagado:hover { background: var(--green-tint); }
   .gasto-btn-quitar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
-    color: #C9A99E;
+    color: var(--ink-4);
     font-size: 0.9rem;
     cursor: pointer;
-    padding: 0.2rem 0.35rem;
+    min-width: 44px;
+    min-height: 44px;
     line-height: 1;
+    border-radius: 999px;
   }
-  .gasto-btn-quitar:hover { color: #A83A2B; }
+  .gasto-btn-quitar:hover { color: var(--red); background: var(--red-tint); }
   /* Gasto ya pagado: atenuado */
   .gasto-card.pagado { opacity: 0.62; }
   .gasto-card.pagado .gasto-card-desc,
-  .gasto-card.pagado .gasto-card-monto { text-decoration: line-through; text-decoration-color: #B0B8BF; }
-  .gasto-btn-pagado.activo { background: #E3F3EA; border-color: #278059; font-weight: 500; }
+  .gasto-card.pagado .gasto-card-monto { text-decoration: line-through; text-decoration-color: var(--ink-3); }
+  .gasto-btn-pagado.activo { background: var(--green-tint); border-color: var(--green); font-weight: 500; }
+
+  /* ===== CSS reconstruido con la paleta nueva ===== */
+
+  /* Tarjetas base: NO tenían ninguna regla propia (bug crítico encontrado en auditoría) */
+  .paper-card {
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 1.9rem;
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+  }
+  .ledger-panel {
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-lg);
+    padding: 1.9rem;
+    box-shadow: var(--shadow-md);
+    min-width: 0;
+  }
+  /* Caja de resultado destacado (ej. "Pago mensual necesario") — también sin regla base */
+  .result-box {
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 1.15rem;
+  }
+  .result-box.good { background: var(--green-tint); border-color: var(--green-soft); }
+  .result-box.warn { background: var(--red-tint); border-color: var(--red-soft); }
+  .result-box.good .result-label, .result-box.good .result-sub,
+  .result-box.warn .result-label, .result-box.warn .result-sub { color: var(--ink-2); }
+
+  /* Estructura de formulario */
+  .field { margin-bottom: 1.3rem; }
+  .label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.45rem;
+  }
+
+  /* Títulos de secciones y paneles */
+  .paper-title, .ledger-title {
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 1.15rem;
+  }
+  .section-title {
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0 0 1rem;
+  }
+
+  /* Resultado grande (dashboard) */
+  .hero-result { margin-bottom: 1.4rem; }
+  .hero-label {
+    font-size: 0.98rem;
+    color: var(--ink-2);
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+  .hero-label strong { color: var(--ink); font-weight: 700; }
+  .hero-number {
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--green);
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-sub {
+    font-size: 0.95rem;
+    color: var(--ink-3);
+    margin-top: 0.6rem;
+    line-height: 1.55;
+  }
+
+  /* Cajas de resultados secundarios */
+  .result-label {
+    font-size: 0.8rem;
+    color: var(--ink-3);
+    font-weight: 500;
+    margin-bottom: 0.45rem;
+    line-height: 1.45;
+  }
+  .result-number {
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .result-sub {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    margin-top: 0.4rem;
+    line-height: 1.5;
+  }
+
+  /* Cards de tips (Estrategias) */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  .tip-card {
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+    padding: 1.35rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .25s var(--ease), transform .25s var(--ease);
+  }
+  .tip-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .tip-num {
+    display: inline-block;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--primary);
+    background: var(--primary-tint);
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .tip-text {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--ink-2);
+    line-height: 1.65;
+  }
+
+  /* FAQ acordeón */
+  .faq-intro {
+    font-size: 0.9rem;
+    color: var(--ink-3);
+    margin: -0.4rem 0 1.2rem;
+  }
+  .faq-lista { display: flex; flex-direction: column; gap: 0.7rem; }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow .25s var(--ease), border-color .25s var(--ease);
+  }
+  .faq-item:hover { border-color: var(--ink-4); }
+  .faq-item[open] { box-shadow: var(--shadow-md); border-color: var(--primary-soft); }
+  .faq-q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1.4;
+    user-select: none;
+    min-height: 44px;
+  }
+  .faq-q::-webkit-details-marker { display: none; }
+  .faq-q::after {
+    content: "";
+    flex-shrink: 0;
+    width: 13px; height: 13px;
+    background:
+      linear-gradient(var(--primary), var(--primary)) center/100% 2px no-repeat,
+      linear-gradient(var(--primary), var(--primary)) center/2px 100% no-repeat;
+    transition: transform .3s var(--ease);
+  }
+  .faq-item[open] .faq-q::after { transform: rotate(135deg); }
+  .faq-q:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -3px;
+    border-radius: var(--r-md);
+  }
+  .faq-a {
+    padding: 0 1.35rem 1.3rem;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.65;
+    max-width: 70ch;
+  }
+  .faq-a p { margin: 0 0 0.7rem; }
+  .faq-a p:last-child { margin-bottom: 0; }
+  .faq-ej {
+    color: var(--green);
+    font-size: 0.82rem;
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--green-brand);
+    font-weight: 500;
+    background: var(--green-tint);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-right: 0.5rem;
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  }
+
+  /* Gráfica */
+  .chart-wrap { margin-top: 1.5rem; }
+  .legend-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .legend-dash {
+    display: inline-block;
+    width: 22px; height: 0;
+    border-top: 2px dashed var(--red-brand);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Fila de meta con input + resultado */
+  .target-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .target-row > * { min-width: 0; }
+
+  /* Botones link secundarios */
+  .btn-link-add {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-family: 'Cabin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    cursor: pointer;
+  }
+  .btn-link-add:hover { color: var(--primary-strong); text-decoration: underline; }
+  .btn-row-remove {
+    background: none;
+    border: none;
+    color: var(--ink-4);
+    font-size: 1.15rem;
+    line-height: 1;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .btn-row-remove:hover { color: var(--red); background: var(--red-tint); }
+
+  /* Checkbox de "misma tarjeta" */
+  .misma-tarjeta-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--ink-2);
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+  }
+
+  /* Zona de reinicio: no tenía regla base, quedaba pegada al contenido de arriba */
+  .zona-reinicio {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--line);
+  }
+  .zona-reinicio-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-width: 44ch;
+  }
+  .zona-reinicio-texto strong {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .zona-reinicio-texto span {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  /* Disclaimer del pie */
+  .disclaimer {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    max-width: none;
+    line-height: 1.6;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Utilidad accesible */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    border: 0;
+  }
+
+  /* --- Marca FSP: firmas visuales --- */
+  .tab-btn.active .tab-num { background: var(--mark) !important; border-color: var(--mark) !important; color: #16161A !important; }
+  [data-theme="dark"] .tab-btn.active .tab-num { background: var(--mark) !important; border-color: var(--mark) !important; color: #16161A !important; }
+  .tip-num { background: var(--mark) !important; color: #16161A !important; border-radius: 6px !important; }
+  .tab-btn, .tab-btn.active { border-radius: 9px; }
+  .btn-add { border-radius: 9px; }
+  .tema-op { border-radius: 8px; }
+  /* Logo */
+  .fsp-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 15px; letter-spacing: -.02em; margin-bottom: 1.6rem; }
+  .fsp-brand:hover { color: var(--ink-2); }
+  .fsp-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .fsp-mark span { display: block; width: 11px; height: 2px; background: var(--mark); box-shadow: 0 4px 0 var(--surface), 0 -4px 0 var(--surface); }
+  [data-theme="dark"] .fsp-mark { background: var(--mark); }
+  [data-theme="dark"] .fsp-mark span { background: #16161A; box-shadow: 0 4px 0 var(--mark), 0 -4px 0 var(--mark); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="eyebrow">Tarjeta de crédito · Calculadora de pago</div>
-    <h1 class="headline">Pagar tu tarjeta de crédito sí es posible</h1>
+  <header class="rise">
+    <a class="fsp-brand" href="./finanzassinpaja.html"><span class="fsp-mark"><span></span></span>Finanzas Sin Paja</a>
+    <div class="header-fila">
+      <div class="header-texto">
+        <h1 class="headline">Paga tu tarjeta <span class="mark">sin morir en el intento.</span></h1>
+      </div>
+      <div class="tema-switch" role="group" aria-label="Apariencia de la página">
+        <button type="button" class="tema-op" data-tema="light" onclick="fijarTema('light')" aria-pressed="true">
+          <span aria-hidden="true">☀</span> Claro
+        </button>
+        <button type="button" class="tema-op" data-tema="dark" onclick="fijarTema('dark')" aria-pressed="false">
+          <span aria-hidden="true">☾</span> Oscuro
+        </button>
+      </div>
+    </div>
     <p class="subtitle">
       Te enseñamos a entender tu tarjeta y a saber cuánto y cuándo pagar.
       Sin registrarte, y tus datos no salen de tu teléfono o computadora.
     </p>
   </header>
 
-  <div class="menu-label">¿Qué quieres hacer?</div>
-  <div class="barra-superior">
+  <div class="menu-label rise rise-1">Sigue estos pasos, o ve directo al que necesites</div>
+  <div class="barra-superior rise rise-1">
     <nav class="tabs-nav" role="tablist" aria-label="Secciones de la calculadora">
-      <button class="tab-btn active" id="btn-tab1" role="tab" aria-selected="true" aria-controls="tab1" onclick="showTab('tab1')">Entendiendo mi tarjeta</button>
-      <button class="tab-btn" id="btn-tab2" role="tab" aria-selected="false" aria-controls="tab2" onclick="showTab('tab2')">Lo que gasto y cuándo pagar</button>
-      <button class="tab-btn" id="btn-tab3" role="tab" aria-selected="false" aria-controls="tab3" onclick="showTab('tab3')">Quiero pagar mi tarjeta</button>
+      <button class="tab-btn active" id="btn-tab1" role="tab" aria-selected="true" aria-controls="tab1" onclick="showTab('tab1')"><span class="tab-num">1</span>Entender mi tarjeta</button>
+      <button class="tab-btn" id="btn-tab2" role="tab" aria-selected="false" aria-controls="tab2" onclick="showTab('tab2')"><span class="tab-num">2</span>Estrategias generales</button>
+      <button class="tab-btn" id="btn-tab3" role="tab" aria-selected="false" aria-controls="tab3" onclick="showTab('tab3')"><span class="tab-num">3</span>Lo que gasto y cuándo pagar</button>
+      <button class="tab-btn" id="btn-tab4" role="tab" aria-selected="false" aria-controls="tab4" onclick="showTab('tab4')"><span class="tab-num">4</span>Armar mi plan de pago</button>
     </nav>
-    <div class="borrar-datos-wrap">
-      <button class="btn-borrar-datos" onclick="borrarDatos()" type="button">🗑 Borrar mis datos</button>
-      <span class="borrar-datos-hint">Empieza de cero: borra todo lo guardado</span>
-    </div>
   </div>
 
   <main>
@@ -675,102 +1127,122 @@
   <!-- ===================== TAB 1: TIPS Y APRENDIZAJE ===================== -->
   <div class="tab-panel active" id="tab1" role="tabpanel" aria-labelledby="btn-tab1" tabindex="0">
     <div class="section-title">Cómo funciona tu tarjeta</div>
-    <div class="ledger-panel" style="margin-bottom: 2rem;">
-      <div class="glossary-item">
-        <div class="glossary-term">Corte (o fecha de corte)</div>
-        <div class="glossary-def">
-          Es el día del mes en que el banco "toma una foto" de tu tarjeta y suma todo lo
-          que gastaste desde el corte anterior. Con eso arma tu estado de cuenta.
+    <p class="faq-intro">Toca cualquier pregunta para ver la respuesta.</p>
+    <div class="faq-lista" style="margin-bottom: 2.5rem;">
+
+      <details class="faq-item" open="">
+        <summary class="faq-q">¿Qué es la fecha de corte?</summary>
+        <div class="faq-a">
+          <p>Es el día del mes en que el banco "toma una foto" de tu tarjeta y suma todo lo
+          que gastaste desde el corte anterior. Con eso arma tu estado de cuenta.</p>
+          <p class="faq-ej">Si tu corte es el 7, todo lo gastado hasta el 7 entra en ese estado de cuenta.</p>
         </div>
-        <div class="glossary-example">Ej: si tu corte es el 7, todo lo gastado hasta el 7 entra en ese estado de cuenta.</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Fecha límite de pago</div>
-        <div class="glossary-def">
-          Es la fecha tope para pagar lo que salió en el estado de cuenta de ese corte.
-          Normalmente son entre 20 y 30 días después del corte.
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es la fecha límite de pago?</summary>
+        <div class="faq-a">
+          <p>Es la fecha tope para pagar lo que salió en el estado de cuenta de ese corte.
+          Normalmente son entre 20 y 30 días después del corte.</p>
+          <p class="faq-ej">Corte el 7 de junio → pago límite el 5 de julio (28 días de plazo).</p>
         </div>
-        <div class="glossary-example">Ej: corte el 7 de junio → pago límite el 5 de julio (28 días de plazo).</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">¿Y lo que gasto después del corte?</div>
-        <div class="glossary-def">
-          No entra en el estado de cuenta que ya cerró. Entra en el siguiente ciclo, y se
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué pasa con lo que gasto después del corte?</summary>
+        <div class="faq-a">
+          <p>No entra en el estado de cuenta que ya cerró. Entra en el siguiente ciclo, y se
           paga hasta la próxima fecha límite. Por eso gastar justo después de tu corte te
-          da casi un mes completo antes de que ese gasto "cuente".
+          da casi un mes completo antes de que ese gasto "cuente".</p>
         </div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Pago mínimo</div>
-        <div class="glossary-def">
-          El monto más bajo que puedes pagar sin caer en mora. El banco cobra el mayor
-          entre un % de tu saldo (usualmente 2%) y un monto fijo (ej. $25). Pagar solo el
-          mínimo alarga muchísimo el tiempo que tardas en liquidar la tarjeta.
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es el pago mínimo y por qué importa tanto?</summary>
+        <div class="faq-a">
+          <p>Es el monto más bajo que puedes pagar sin caer en mora. El banco cobra el mayor
+          entre un % de tu saldo (usualmente 2%) y un monto fijo (ej. $25).</p>
+          <p>Pagar solo el mínimo alarga muchísimo el tiempo que tardas en liquidar la tarjeta:
+          puede convertir una deuda de un año en uno de varias décadas.</p>
         </div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Tasa de interés anual (APR)</div>
-        <div class="glossary-def">
-          El costo de mantener saldo pendiente, expresado como porcentaje anual. Se cobra
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es la tasa de interés anual (APR)?</summary>
+        <div class="faq-a">
+          <p>Es el costo de mantener saldo pendiente, expresado como porcentaje anual. Se cobra
           mes a mes sobre el saldo que no pagaste. Entre más alto el APR, más caro te
-          sale cada mes que no pagas completo.
+          sale cada mes que no pagas completo.</p>
         </div>
-      </div>
+      </details>
     </div>
 
     <div class="section-title">Los campos de tu estado de cuenta</div>
-    <div class="ledger-panel" style="margin-bottom: 2rem;">
-      <div class="glossary-item">
-        <div class="glossary-term">Límite total de la tarjeta</div>
-        <div class="glossary-def">
-          Es lo máximo que el banco te presta en total, tu techo de crédito.
+    <p class="faq-intro">Qué significa cada número que ves en la app de tu banco.</p>
+    <div class="faq-lista" style="margin-bottom: 2.5rem;">
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es el límite total de la tarjeta?</summary>
+        <div class="faq-a">
+          <p>Es lo máximo que el banco te presta en total, tu techo de crédito.</p>
+          <p class="faq-ej">Ejemplo: límite total $7,875.00</p>
         </div>
-        <div class="glossary-example">Ej: límite total $7,875.00</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Utilizado</div>
-        <div class="glossary-def">
-          Cuánto de ese límite ya gastaste y no has pagado, actualizado al día de hoy —
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué significa "utilizado"?</summary>
+        <div class="faq-a">
+          <p>Cuánto de ese límite ya gastaste y no has pagado, actualizado al día de hoy —
           incluye compras que hiciste después del último corte, aunque todavía no salgan
-          en un estado de cuenta.
+          en un estado de cuenta.</p>
+          <p class="faq-ej">Ejemplo: utilizado al 01-jul-2026: $4,165.00</p>
         </div>
-        <div class="glossary-example">Ej: utilizado al 01-jul-2026: $4,165.00</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Disponible para compras</div>
-        <div class="glossary-def">
-          Lo que te queda de límite para seguir gastando: Límite total menos lo Utilizado.
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es "disponible para compras"?</summary>
+        <div class="faq-a">
+          <p>Lo que te queda de límite para seguir gastando: el límite total menos lo utilizado.</p>
+          <p class="faq-ej">Ejemplo: $7,875.00 − $4,165.00 = $3,710.00 disponibles</p>
         </div>
-        <div class="glossary-example">Ej: $7,875.00 − $4,165.00 = $3,710.00 disponibles</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Deuda al corte</div>
-        <div class="glossary-def">
-          El saldo que quedó "congelado" el día del corte — es la base sobre la que el
-          banco calcula el pago mínimo y los intereses de ese ciclo. Suele ser distinto al
-          "Utilizado" de hoy, porque no incluye lo que gastaste después del corte.
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Qué es la "deuda al corte"?</summary>
+        <div class="faq-a">
+          <p>El saldo que quedó "congelado" el día del corte — es la base sobre la que el
+          banco calcula el pago mínimo y los intereses de ese ciclo.</p>
+          <p>Suele ser distinto al "utilizado" de hoy, porque no incluye lo que gastaste
+          después del corte.</p>
+          <p class="faq-ej">Ejemplo: deuda al corte del 07-jun-2026: $4,089.07</p>
         </div>
-        <div class="glossary-example">Ej: deuda al corte del 07-jun-2026: $4,089.07</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Pago mínimo</div>
-        <div class="glossary-def">
-          Lo mínimo que debes pagar antes del día límite para no caer en mora. Se calcula
-          sobre la deuda al corte, no sobre lo utilizado hoy.
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Sobre qué monto se calcula mi pago mínimo?</summary>
+        <div class="faq-a">
+          <p>Sobre la deuda al corte, no sobre lo utilizado hoy. Es lo mínimo que debes pagar
+          antes del día límite para no caer en mora.</p>
+          <p class="faq-ej">Ejemplo: pago mínimo de ese corte: $123.00</p>
         </div>
-        <div class="glossary-example">Ej: pago mínimo de ese corte: $123.00</div>
-      </div>
-      <div class="glossary-item">
-        <div class="glossary-term">Día límite para pagar</div>
-        <div class="glossary-def">
-          La fecha tope para pagar, al menos, el pago mínimo de ese corte. Muchas apps de
-          banco también te muestran cuántos días faltan.
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">¿Cuál es el día límite para pagar?</summary>
+        <div class="faq-a">
+          <p>La fecha tope para pagar, al menos, el pago mínimo de ese corte. Muchas apps de
+          banco también te muestran cuántos días faltan.</p>
+          <p class="faq-ej">Ejemplo: 05-jul-2026 (faltan 3 días)</p>
         </div>
-        <div class="glossary-example">Ej: 05-jul-2026 (faltan 3 días)</div>
-      </div>
+      </details>
     </div>
 
-    <div class="section-title">Estrategias generales</div>
+  </div>
+
+  <!-- ===================== TAB 2: ESTRATEGIAS ===================== -->
+  <div class="tab-panel" id="tab2" role="tabpanel" aria-labelledby="btn-tab2" tabindex="0">
+    <div class="section-title">4 hábitos que bajan tu tarjeta más rápido</div>
+    <p class="faq-intro">No necesitas ganar más para salir antes. Estos son los cambios que más pesan.</p>
     <div class="tips-grid">
       <div class="tip-card">
         <div class="tip-num">01</div>
@@ -791,11 +1263,11 @@
     </div>
   </div>
 
-  <!-- ===================== TAB 2: REGISTRO DE GASTOS ===================== -->
-  <div class="tab-panel" id="tab2" role="tabpanel" aria-labelledby="btn-tab2" tabindex="0">
+  <!-- ===================== TAB 3: REGISTRO DE GASTOS ===================== -->
+  <div class="tab-panel" id="tab3" role="tabpanel" aria-labelledby="btn-tab3" tabindex="0">
     <div class="ledger-panel">
       <div class="ledger-title">Tu ciclo de facturación</div>
-      <p style="font-size:0.82rem; color:#5A666F; margin-top:-0.4rem; margin-bottom:1.25rem;">
+      <p style="font-size:0.82rem; color:var(--ink-3); margin-top:-0.4rem; margin-bottom:1.25rem;">
         Pon las dos fechas de tu último estado de cuenta y el sistema calcula solo cuándo
         cae tu corte cada mes.
       </p>
@@ -803,18 +1275,18 @@
       <div class="hint" style="margin-bottom:0.75rem;">Introduce el día de corte de cada mes y el día de pago de cada mes</div>
       <div class="row-2" style="margin-bottom:0.3rem; max-width:420px;">
         <div>
-          <label class="label" style="color:#35414A;" for="diaCorte">Día de tu corte</label>
-          <input class="input-field" type="number" min="1" max="31" id="diaCorte" value="" placeholder="Ej: 7" />
+          <label class="label" style="color:var(--ink-2);" for="diaCorte">Día de tu corte</label>
+          <input class="input-field" type="number" min="1" max="31" id="diaCorte" value="" placeholder="Ej: 7">
         </div>
         <div>
-          <label class="label" style="color:#35414A;" for="diaPago">Día límite de pago</label>
-          <input class="input-field" type="number" min="1" max="31" id="diaPago" value="" placeholder="Ej: 5" />
+          <label class="label" style="color:var(--ink-2);" for="diaPago">Día límite de pago</label>
+          <input class="input-field" type="number" min="1" max="31" id="diaPago" value="" placeholder="Ej: 5">
         </div>
       </div>
       <div class="hint" style="margin-bottom:1.5rem;" id="cicloHint" aria-live="polite"></div>
 
       <div class="ledger-title">Gastos del día a día</div>
-      <p style="font-size:0.82rem; color:#5A666F; margin-top:-0.4rem; margin-bottom:1.25rem;">
+      <p style="font-size:0.82rem; color:var(--ink-3); margin-top:-0.4rem; margin-bottom:1.25rem;">
         Registra lo que gastas y te decimos a qué corte pertenece y cuándo vence ese pago.
       </p>
 
@@ -844,41 +1316,55 @@
       <div id="gastosLista" style="margin-top:0.75rem;"></div>
       <div class="empty-state" id="emptyState">Aún no has agregado gastos.</div>
     </div>
+
+      <div class="zona-reinicio">
+        <div class="zona-reinicio-texto">
+          <strong>¿Quieres empezar de cero?</strong>
+          <span>Se borra todo lo que guardaste en este navegador: tu situación, tus gastos y tu plan.</span>
+        </div>
+        <button class="btn-borrar-datos" onclick="borrarDatos()" type="button">Borrar mis datos</button>
+      </div>
   </div>
 
-  <!-- ===================== TAB 3: DASHBOARD DE PAGO ===================== -->
-  <div class="tab-panel" id="tab3" role="tabpanel" aria-labelledby="btn-tab3" tabindex="0">
+  <!-- ===================== TAB 4: DASHBOARD DE PAGO ===================== -->
+  <div class="tab-panel" id="tab4" role="tabpanel" aria-labelledby="btn-tab4" tabindex="0">
     <div class="grid-3col">
       <!-- INPUT CARD -->
       <div class="paper-card">
         <div class="paper-title">Tu situación actual</div>
+        <p class="hint" style="margin-top:-0.6rem; margin-bottom:1.5rem;">Estos 3 datos los encuentras en tu app o estado de cuenta del banco.</p>
 
         <div class="field">
-          <label class="label" for="balance">Saldo actual</label>
-          <input class="input-field" type="number" min="0" id="balance" value="" placeholder="Ej: 3500" />
+          <label class="label" for="balance" style="display:flex; align-items:center; gap:0.55rem;"><span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--primary-tint); color:var(--primary); font-family:'Cabin', -apple-system, BlinkMacSystemFont, sans-serif; font-size:0.74rem; font-weight:700;">1</span>¿Cuánto debes hoy en la tarjeta?</label>
+          <input class="input-field" type="number" min="0" id="balance" value="" placeholder="Ej: 3500">
         </div>
 
         <div class="field">
-          <label class="label" for="apr">Tasa de interés anual (APR %)</label>
-          <input class="input-field" type="number" min="0" step="0.1" id="apr" value="" placeholder="Ej: 38" />
-          <div class="hint">Aparece en tu estado de cuenta como tasa anual o CAT</div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="minActual">Tu pago mínimo actual</label>
-          <input class="input-field" type="number" min="0" id="minActual" value="" placeholder="Ej: 123" />
-          <div class="hint">El que te muestra tu app o estado de cuenta — no hay que calcularlo</div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="cargosFijos">Cargos fijos del mes (opcional)</label>
-          <input class="input-field" type="number" min="0" id="cargosFijos" value="0" />
-          <div class="hint">Seguro, membresía u otros cobros mensuales de la tarjeta — si no tienes, déjalo en 0</div>
+          <label class="label" for="apr" style="display:flex; align-items:center; gap:0.55rem;"><span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--primary-tint); color:var(--primary); font-family:'Cabin', -apple-system, BlinkMacSystemFont, sans-serif; font-size:0.74rem; font-weight:700;">2</span>¿Cuál es la tasa de interés anual?</label>
+          <input class="input-field" type="number" min="0" step="0.1" id="apr" value="" placeholder="Ej: 38">
+          <div class="hint" style="margin-left:1.9rem;">En tu estado de cuenta puede decir "tasa anual" o "CAT"</div>
         </div>
 
         <div class="field" style="margin-bottom:0;">
-          <label class="label" for="lumpSum">Abono único hoy (opcional)</label>
-          <input class="input-field" type="number" min="0" id="lumpSum" value="0" />
+          <label class="label" for="minActual" style="display:flex; align-items:center; gap:0.55rem;"><span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--primary-tint); color:var(--primary); font-family:'Cabin', -apple-system, BlinkMacSystemFont, sans-serif; font-size:0.74rem; font-weight:700;">3</span>¿Cuál es tu pago mínimo actual?</label>
+          <input class="input-field" type="number" min="0" id="minActual" value="" placeholder="Ej: 123">
+          <div class="hint" style="margin-left:1.9rem;">El que ya te muestra tu banco — no tienes que calcularlo tú</div>
+        </div>
+
+        <div style="border-top:1px dashed var(--line); margin:1.5rem 0 1.25rem; padding-top:1.15rem;">
+          <div class="hint" style="margin-bottom:1.1rem; font-weight:600; color:var(--ink-3);">Opcional — solo si te aplica</div>
+
+          <div class="field">
+            <label class="label" for="cargosFijos" style="color:var(--ink-2); font-weight:500;">¿Pagas algún cargo fijo cada mes?</label>
+            <input class="input-field" type="number" min="0" id="cargosFijos" value="0">
+            <div class="hint">Seguro, membresía u otro cobro fijo de la tarjeta — si no tienes, déjalo en 0</div>
+          </div>
+
+          <div class="field" style="margin-bottom:0;">
+            <label class="label" for="lumpSum" style="color:var(--ink-2); font-weight:500;">¿Vas a abonar algo extra hoy?</label>
+            <input class="input-field" type="number" min="0" id="lumpSum" value="0">
+            <div class="hint">Un bono, aguinaldo o ahorro que quieras meter de una sola vez — si no, déjalo en 0</div>
+          </div>
         </div>
       </div>
 
@@ -895,8 +1381,8 @@
           </p>
           <div class="target-row">
             <div>
-              <label class="label" style="color:#35414A;" for="targetMonths">Quiero terminar de pagar en</label>
-              <input class="input-field" style="width:140px;" type="number" min="1" id="targetMonths" value="12" />
+              <label class="label" style="color:var(--ink-2);" for="targetMonths">Quiero terminar de pagar en</label>
+              <input class="input-field" style="width:140px;" type="number" min="1" id="targetMonths" value="12">
               <div class="hint">meses</div>
             </div>
             <div class="result-box good" style="flex:1; min-width:180px;">
@@ -909,16 +1395,16 @@
 
         <div class="ledger-panel" style="margin-top:1.25rem;">
           <div class="ledger-title">Compara distintos plazos</div>
-          <p style="font-size:0.8rem; color:#5A666F; margin-top:-0.4rem; margin-bottom:1.1rem;">
+          <p style="font-size:0.8rem; color:var(--ink-3); margin-top:-0.4rem; margin-bottom:1.1rem;">
             Entre más corto el plazo, más alto el pago mensual pero menos interés total pagas.
           </p>
-          <div style="overflow-x:auto;">
+          <div style="overflow-x:auto; width:100%; min-width:0;">
             <table class="expense-table">
               <thead>
                 <tr>
                   <th>Plazo</th>
-                  <th>Pago/mes</th>
-                  <th>Interés</th>
+                  <th style="text-align:right;">Pago/mes</th>
+                  <th style="text-align:right;">Interés</th>
                   <th></th>
                 </tr>
               </thead>
@@ -936,8 +1422,8 @@
         </p>
 
         <div class="field">
-          <label class="label" style="color:#35414A;" for="plannedPayment">Puedo pagar esto cada mes</label>
-          <input class="input-field" style="width:140px;" type="number" min="0" id="plannedPayment" value="" placeholder="Ej: 250" />
+          <label class="label" style="color:var(--ink-2);" for="plannedPayment">Puedo pagar esto cada mes</label>
+          <input class="input-field" style="width:140px;" type="number" min="0" id="plannedPayment" value="" placeholder="Ej: 250">
         </div>
 
         <div class="warn-banner" id="warnBanner" aria-live="polite">
@@ -952,7 +1438,7 @@
 
         <div id="gastoImpactoWrap" style="display:none;">
           <label class="misma-tarjeta-check">
-            <input type="checkbox" id="mismaTarjeta" />
+            <input type="checkbox" id="mismaTarjeta">
             Cruzar con mis gastos registrados (si son de esta misma tarjeta)
           </label>
           <div class="gasto-impacto" id="gastoImpacto" aria-live="polite"></div>
@@ -963,7 +1449,7 @@
         <div class="chart-wrap">
           <div class="legend-row">
             <span><span class="legend-dash"></span>Si pagaras solo el mínimo</span>
-            <span><span class="legend-dot" style="background:#3FA37A;"></span>Tu plan</span>
+            <span><span class="legend-dot" style="background:var(--green-brand);"></span>Tu plan</span>
           </div>
           <canvas id="payoffChart" height="220" role="img" aria-label="Gráfica del saldo restante mes a mes"></canvas>
           <p class="sr-only" id="chartSrSummary" aria-live="polite"></p>
@@ -974,7 +1460,7 @@
           <div class="exportar-acciones">
             <button class="btn-add" type="button" onclick="descargarPlanPDF()">Descargar en PDF</button>
             <div class="exportar-correo" id="exportarCorreo" style="display:none;">
-              <input class="input-field" type="email" id="correoDestino" placeholder="tu@correo.com" />
+              <input class="input-field" type="email" id="correoDestino" placeholder="tu@correo.com">
               <button class="btn-add" type="button" onclick="enviarPlanCorreo()">Enviar a mi correo</button>
             </div>
           </div>
@@ -982,6 +1468,14 @@
         </div>
       </div>
     </div>
+
+      <div class="zona-reinicio">
+        <div class="zona-reinicio-texto">
+          <strong>¿Quieres empezar de cero?</strong>
+          <span>Se borra todo lo que guardaste en este navegador: tu situación, tus gastos y tu plan.</span>
+        </div>
+        <button class="btn-borrar-datos" onclick="borrarDatos()" type="button">Borrar mis datos</button>
+      </div>
   </div>
 
   </main>
@@ -999,6 +1493,49 @@
 
 <script>
 const MAX_MONTHS = 600;
+
+// ---- Tema claro / oscuro ----
+const CLAVE_TEMA = "calculadoraTarjetaTema";
+
+function aplicarTema(tema) {
+  const oscuro = tema === "dark";
+  document.documentElement.setAttribute("data-theme", oscuro ? "dark" : "light");
+  document.querySelectorAll(".tema-op").forEach((b) => {
+    b.setAttribute("aria-pressed", b.dataset.tema === (oscuro ? "dark" : "light") ? "true" : "false");
+  });
+}
+
+function fijarTema(tema) {
+  if (document.documentElement.getAttribute("data-theme") === tema) return;
+  aplicarTema(tema);
+  try { localStorage.setItem(CLAVE_TEMA, tema); } catch (e) {}
+  // La gráfica no hereda variables CSS: hay que reconstruirla con los colores del tema
+  if (typeof chart !== "undefined" && chart) {
+    try { chart.destroy(); } catch (e) {}
+    chart = null;
+  }
+  if (typeof recalculate === "function") recalculate();
+}
+
+function iniciarTema() {
+  let guardado = null;
+  try { guardado = localStorage.getItem(CLAVE_TEMA); } catch (e) {}
+  if (guardado === "dark" || guardado === "light") {
+    aplicarTema(guardado);
+  } else {
+    // Sin preferencia guardada: seguimos la del sistema
+    const prefiereOscuro = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    aplicarTema(prefiereOscuro ? "dark" : "light");
+  }
+}
+
+// Devuelve los colores de la gráfica según el tema activo
+function coloresGrafica() {
+  const oscuro = document.documentElement.getAttribute("data-theme") === "dark";
+  return oscuro
+    ? { rojo: "#E07A7A", verde: "#6BD3AC", texto: "#9A9AA1", rejilla: "#232329", panel: "#17171B", borde: "#2A2A31", tinta: "#F5F5F4" }
+    : { rojo: "#C93B3B", verde: "#22936C", texto: "#6F6F76", rejilla: "#F0F0F3", panel: "#FFFFFF", borde: "#E6E6EA", tinta: "#16161A" };
+}
 
 // ---- Configuración de EmailJS (opcional) ----
 // Para activar el envío por correo: crea una cuenta gratis en emailjs.com,
@@ -1116,7 +1653,22 @@ function descargarPlanPDF() {
     <style>
       body { font-family: Georgia, serif; color: #16263B; max-width: 640px; margin: 3rem auto; padding: 0 1.5rem; line-height: 1.6; }
       pre { font-family: inherit; white-space: pre-wrap; font-size: 1rem; }
-    </style></head><body><pre>${resumen.replace(/</g, "&lt;")}</pre>
+    
+  /* --- Marca FSP: firmas visuales --- */
+  .tab-btn.active .tab-num { background: var(--mark) !important; border-color: var(--mark) !important; color: #16161A !important; }
+  [data-theme="dark"] .tab-btn.active .tab-num { background: var(--mark) !important; border-color: var(--mark) !important; color: #16161A !important; }
+  .tip-num { background: var(--mark) !important; color: #16161A !important; border-radius: 6px !important; }
+  .tab-btn, .tab-btn.active { border-radius: 9px; }
+  .btn-add { border-radius: 9px; }
+  .tema-op { border-radius: 8px; }
+  /* Logo */
+  .fsp-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 15px; letter-spacing: -.02em; margin-bottom: 1.6rem; }
+  .fsp-brand:hover { color: var(--ink-2); }
+  .fsp-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .fsp-mark span { display: block; width: 11px; height: 2px; background: var(--mark); box-shadow: 0 4px 0 var(--surface), 0 -4px 0 var(--surface); }
+  [data-theme="dark"] .fsp-mark { background: var(--mark); }
+  [data-theme="dark"] .fsp-mark span { background: #16161A; box-shadow: 0 4px 0 var(--mark), 0 -4px 0 var(--mark); }
+</style></head><body><pre>${resumen.replace(/</g, "&lt;")}</pre>
     <script>window.onload = () => window.print();<\/script></body></html>`);
   ventana.document.close();
   registrarEvento("plan_exportado");
@@ -1332,8 +1884,8 @@ function renderTimeComparison(remainingBalance, monthlyRate, plannedPayment, fix
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${monthsToText(m)}</td>
-      <td>${payment ? fmt(payment) : "—"}</td>
-      <td>${totalInterest !== null ? fmt(totalInterest) : "—"}</td>
+      <td style="text-align:right; font-variant-numeric:tabular-nums;">${payment ? fmt(payment) : "—"}</td>
+      <td style="text-align:right; font-variant-numeric:tabular-nums;">${totalInterest !== null ? fmt(totalInterest) : "—"}</td>
       <td>${alcanzable ? '<span class="tag ok">ya lo alcanzas</span>' : ""}</td>
     `;
     tbody.appendChild(tr);
@@ -1477,13 +2029,23 @@ function recalculate() {
   const minimoData = labels.map((i) => (i < minResult.series.length ? minResult.series[i].balance : null));
   const planData = labels.map((i) => (i < planResult.series.length ? planResult.series[i].balance : null));
 
-  if (chart) {
-    chart.data.labels = labels;
-    chart.data.datasets[0].data = minimoData;
-    chart.data.datasets[1].data = planData;
-    chart.update();
-  } else {
-    const ctx = document.getElementById("payoffChart").getContext("2d");
+  // La gráfica es un complemento: si Chart.js no cargó (red lenta, bloqueador, CDN caído),
+  // la calculadora debe seguir funcionando y guardando igual.
+  try {
+    if (typeof Chart === "undefined") {
+      const cw = document.querySelector(".chart-wrap");
+      if (cw && !cw.dataset.fallback) {
+        cw.dataset.fallback = "1";
+        cw.style.display = "none";
+      }
+    } else if (chart) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = minimoData;
+      chart.data.datasets[1].data = planData;
+      chart.update();
+    } else {
+      const ctx = document.getElementById("payoffChart").getContext("2d");
+      const col = coloresGrafica();
     chart = new Chart(ctx, {
       type: "line",
       data: {
@@ -1492,8 +2054,8 @@ function recalculate() {
           {
             label: "Solo mínimo",
             data: minimoData,
-            borderColor: "#C05746",
-            backgroundColor: "#C05746",
+            borderColor: col.rojo,
+            backgroundColor: col.rojo,
             borderWidth: 2,
             borderDash: [6, 4],
             pointRadius: 0,
@@ -1503,8 +2065,8 @@ function recalculate() {
           {
             label: "Tu plan",
             data: planData,
-            borderColor: "#3FA37A",
-            backgroundColor: "#3FA37A",
+            borderColor: col.verde,
+            backgroundColor: col.verde,
             borderWidth: 2,
             pointRadius: 0,
             spanGaps: false,
@@ -1521,30 +2083,33 @@ function recalculate() {
               title: (items) => `Mes ${items[0].label}`,
               label: (item) => `${item.dataset.label}: ${fmt(item.raw)}`,
             },
-            backgroundColor: "#FFFFFF",
-            titleColor: "#16263B",
-            bodyColor: "#16263B",
-            borderColor: "#DCD3BD",
+            backgroundColor: col.panel,
+            titleColor: col.tinta,
+            bodyColor: col.tinta,
+            borderColor: col.borde,
             borderWidth: 1,
           },
         },
         scales: {
           x: {
-            title: { display: true, text: "Meses", color: "#5C6B78", font: { size: 11 } },
-            ticks: { color: "#5C6B78", font: { size: 11 }, maxTicksLimit: 10 },
-            grid: { color: "#EEE8D9" },
+            title: { display: true, text: "Meses", color: col.texto, font: { size: 11 } },
+            ticks: { color: col.texto, font: { size: 11 }, maxTicksLimit: 10 },
+            grid: { color: col.rejilla },
           },
           y: {
             ticks: {
-              color: "#5C6B78",
+              color: col.texto,
               font: { size: 11 },
               callback: (v) => "$" + Math.round(v / 100) / 10 + "k",
             },
-            grid: { color: "#EEE8D9" },
+            grid: { color: col.rejilla },
           },
         },
       },
     });
+    }
+  } catch (e) {
+    // La gráfica falló; el resto de la calculadora continúa normalmente.
   }
 
   if (usuarioModificoDatos && !planResult.neverPaysOff && balance > 0) {
@@ -1561,7 +2126,7 @@ let usuarioModificoDatos = false;
   document.getElementById(id).addEventListener("input", () => { usuarioModificoDatos = true; });
 });
 
-document.querySelectorAll("#tab3 input").forEach((el) => el.addEventListener("input", recalculate));
+document.querySelectorAll("#tab4 input").forEach((el) => el.addEventListener("input", recalculate));
 recalculate();
 
 // ---- Gastos del día a día / ciclo de corte ----
@@ -1908,6 +2473,7 @@ estadoCargado = true;
 renderGastos();
 inicializarEmail();
 inicializarAnalytics();
+iniciarTema();
 
 // ---- Tabs ----
 function showTab(name) {
@@ -1920,11 +2486,11 @@ function showTab(name) {
   const btn = document.getElementById("btn-" + name);
   btn.classList.add("active");
   btn.setAttribute("aria-selected", "true");
-  if (name === "tab3" && chart) {
+  if (name === "tab4" && chart) {
     requestAnimationFrame(() => chart.resize());
   }
 }
 
 </script>
-</body>
-</html>
+
+</body></html>
